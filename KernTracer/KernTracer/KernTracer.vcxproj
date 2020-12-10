@@ -160,6 +160,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Src\Core\Camera.cpp" />
+    <ClCompile Include="Src\Core\ObjLoader.cpp" />
+    <ClCompile Include="Src\Core\RayTracer.cpp" />
+    <ClCompile Include="Src\Core\Triangle.cpp" />
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -169,12 +173,22 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Src\tiny_obj_loader.cc">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Core\Camera.h" />
+    <ClInclude Include="Include\Core\ObjLoader.h" />
+    <ClInclude Include="Include\Core\Ray.h" />
+    <ClInclude Include="Include\Core\RayTracer.h" />
+    <ClInclude Include="Include\Core\Triangle.h" />
     <ClInclude Include="Include\Graphics\OpenGL\glad.h" />
     <ClInclude Include="Include\Graphics\OpenGL\khrplatform.h" />
     <ClInclude Include="Include\Graphics\Window\Window.h" />
     <ClInclude Include="Include\pch.h" />
+    <ClInclude Include="Include\tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

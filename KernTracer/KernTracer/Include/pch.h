@@ -13,6 +13,9 @@
 #include <string>
 #include <cstdint>
 
-
-
 #include <stdlib.h>
+
+
+// glm includes
+#include "glm/vec3.hpp"
+#include <glm/geometric.hpp>

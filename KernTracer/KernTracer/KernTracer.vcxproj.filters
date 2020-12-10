@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\OpenGL">
-      <UniqueIdentifier>{f2afb3d1-2e91-40b8-9531-63ab52d1f103}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Graphics">
       <UniqueIdentifier>{e700d862-48b9-4740-b168-aafa2925afc8}</UniqueIdentifier>
     </Filter>
@@ -25,21 +22,48 @@
     <Filter Include="Header Files\Graphics\Window">
       <UniqueIdentifier>{04b832db-2453-4a41-b1e7-5a0390487c2d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Window">
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{b5fb694b-4a7f-4464-8292-582a079fc78d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Core">
+      <UniqueIdentifier>{077325d0-5920-4c49-9e4b-c7666b6a68c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{93c2cdc2-081a-4815-8ee3-fbec1ee32f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\Window">
       <UniqueIdentifier>{3e521d6c-2131-4b8a-b8e5-b3102a189004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\OpenGL">
+      <UniqueIdentifier>{f2afb3d1-2e91-40b8-9531-63ab52d1f103}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
-      <Filter>Source Files\OpenGL</Filter>
+      <Filter>Source Files\Graphics\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="Src\Graphics\Window\Window.cpp">
-      <Filter>Source Files\Window</Filter>
+      <Filter>Source Files\Graphics\Window</Filter>
     </ClCompile>
     <ClCompile Include="Src\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Triangle.cpp">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\RayTracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\ObjLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\tiny_obj_loader.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,6 +79,24 @@
     </ClInclude>
     <ClInclude Include="Include\pch.h">
       <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\Triangle.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\Ray.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\RayTracer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\ObjLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\tiny_obj_loader.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
