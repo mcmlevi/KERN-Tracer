@@ -11,7 +11,7 @@ RT::Camera::Camera(const float fov, const glm::vec2& size, const glm::vec3& orig
 	m_angle = (glm::tan((glm::pi<float>() * m_fov / 180.f) / 2.f));
 }
 
-RT::Ray RT::Camera::GetRayAt(const glm::vec2& screenPos)
+RT::Ray RT::Camera::GetRayAt(const glm::vec2& screenPos) const
 {
 	// normalize screen coordinates and make sure the values are from the middle of the pixel
 

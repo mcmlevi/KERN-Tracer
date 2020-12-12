@@ -91,5 +91,5 @@ void RT::Window::InitWindow()
 
     glfwMakeContextCurrent(m_Window);
     gladLoadGL();
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 }

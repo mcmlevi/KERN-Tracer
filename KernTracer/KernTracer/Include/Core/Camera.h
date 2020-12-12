@@ -11,7 +11,7 @@ namespace RT
 	{
 	public:
 		Camera(const float fov, const glm::vec2& size, const glm::vec3& origin, const glm::vec3& lookat);
-		Ray GetRayAt(const glm::vec2& screenPos);
+		Ray GetRayAt(const glm::vec2& screenPos) const;
 	private:
 		float m_fov;
 		float m_aspectRatio;
