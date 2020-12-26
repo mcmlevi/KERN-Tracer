@@ -62,7 +62,7 @@ namespace JobSystem
         auto numCores = std::thread::hardware_concurrency();
 
         // Calculate the actual number of worker threads we want:
-        numThreads = std::max(1u, numCores);
+        numThreads = std::max(1u, numCores - RESERVE_CORES);
 
         // Create all our worker threads while immediately starting them:
         for (uint32_t threadID = 0; threadID < numThreads; ++threadID)

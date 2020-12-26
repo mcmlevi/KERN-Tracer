@@ -49,7 +49,7 @@ int main(void)
     }
     
 	
-    RT::Camera cam{ 70, window.GetSize(), { 0,0,10 }, { 0,0,-5 } };
+    RT::Camera cam{ 70, window.GetSize(), { 1,0,20 }, { 1,0,-5 } };
     RT::RayTracer tracer{};
     JobSystem::Initialize();
     int currentBuffer{ 0 };
@@ -57,7 +57,7 @@ int main(void)
     {
         RT::Timer timer{};
         const glm::vec2 winSize = window.GetSize();
-    	for (int y = 0; y < window.GetSize().y; y+= CHUNKSIZE)
+    	for (unsigned y = 0; y < window.GetSize().y; y+= CHUNKSIZE)
         {
             for (int x = 0; x < winSize.x; x+= CHUNKSIZE)
             {
@@ -74,8 +74,10 @@ int main(void)
                 JobSystem::Execute([&tracer,pos,chunk,winSize,&cam,&buffers,currentBuffer]() {RenderJob(tracer,pos,chunk, winSize, cam, buffers[currentBuffer]); },&counters[currentBuffer]);
             }
         }
-       
+#pragma warning(push,0)
+#pragma warning(disable: 28020)
         JobSystem::Wait(&counters[currentBuffer]);
+#pragma warning(pop)
         window.DrawPixelBuffer(window.GetSize(), GL_RGB, GL_FLOAT, (void*)buffers[currentBuffer]);
         window.Update();
         currentBuffer++;

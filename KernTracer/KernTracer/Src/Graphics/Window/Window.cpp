@@ -81,7 +81,7 @@ void RT::Window::InitWindow()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    m_Window = glfwCreateWindow(m_WindowSize.x, m_WindowSize.y, m_WindowName.c_str(), NULL, NULL);
+    m_Window = glfwCreateWindow(static_cast<int>(m_WindowSize.x), static_cast<int>(m_WindowSize.y), m_WindowName.c_str(), NULL, NULL);
     if (!m_Window)
     {
         glfwTerminate();

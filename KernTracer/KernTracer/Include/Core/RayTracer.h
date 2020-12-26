@@ -7,7 +7,7 @@ namespace RT
 	class RayTracer
 	{
 	public:
-		RayTracer() = default;
+		RayTracer();
 		glm::vec3 Trace(const Ray& ray, int currentDepth) const;
 	private:
 

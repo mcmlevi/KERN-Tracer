@@ -11,7 +11,7 @@ RT::Triangle::Triangle(const std::array<glm::vec3, 3>& verts):m_vertex{verts}
 	m_normal = glm::cross(v, w);
 }
 
-bool RT::Triangle::Intersect(const Ray& ray, float& t)
+bool RT::Triangle::Intersect(const Ray& ray, float& t) const
 {
 	float u{}, v{};
 	
@@ -44,4 +44,14 @@ bool RT::Triangle::Intersect(const Ray& ray, float& t)
 const glm::vec3& RT::Triangle::GetNormal() const
 {
 	return m_normal;
+}
+
+glm::vec3 RT::Triangle::GetCenter() const
+{
+	return (m_vertex[0] + m_vertex[1] + m_vertex[2]) / 3.f;
+}
+
+const std::array<glm::vec3, 3>& RT::Triangle::GetVerts() const
+{
+	return m_vertex;
 }

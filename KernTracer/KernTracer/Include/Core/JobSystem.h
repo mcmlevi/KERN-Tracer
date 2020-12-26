@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <atomic>
+#define RESERVE_CORES 2 // Reserve Cores for system functionality
 
 // A Dispatched job will receive this as function argument:
 struct JobDispatchArgs

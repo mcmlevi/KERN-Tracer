@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Src\Core\BVH\BVH.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\JobSystem.cpp" />
     <ClCompile Include="Src\Core\ObjLoader.cpp" />
@@ -181,8 +182,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Core\BVH\BVH.h" />
+    <ClInclude Include="Include\Core\BVH\BVHNode.h" />
     <ClInclude Include="Include\Core\Camera.h" />
     <ClInclude Include="Include\Core\JobSystem.h" />
+    <ClInclude Include="Include\Core\Model.h" />
     <ClInclude Include="Include\Core\PointLight.h" />
     <ClInclude Include="Include\Core\ObjLoader.h" />
     <ClInclude Include="Include\Core\Ray.h" />

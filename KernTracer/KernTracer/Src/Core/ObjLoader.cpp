@@ -1,4 +1,6 @@
 #include "pch.h"
+#pragma warning(push,0)
+#pragma warning(disable: 26451 4201)
 #include "Core/ObjLoader.h"
 #include <glm/gtx/hash.hpp>
 #include <tiny_obj_loader.h>
@@ -34,7 +36,7 @@ std::unique_ptr<RT::Model> RT::ObjLoader::LoadModel(const std::string& filePath)
         printf("Something went wrong while trying to load the obj");
     }
 
-    std::unique_ptr<RT::Model> model = std::make_unique<RT::Model>(); \
+    std::unique_ptr<RT::Model> model = std::make_unique<RT::Model>(); 
 
         for (const auto& shape : shapes)
         {
@@ -56,8 +58,15 @@ std::unique_ptr<RT::Model> RT::ObjLoader::LoadModel(const std::string& filePath)
             for (int i = 0; i < vertices.size(); i += 3)
             {
                 model->triangles.push_back(RT::Triangle{ {vertices[i],vertices[i + 1],vertices[i + 2] } });
+                model->Bounds[0] = glm::min(model->Bounds[0], vertices[i]);
+                model->Bounds[0] = glm::min(model->Bounds[0], vertices[i+1]);
+                model->Bounds[0] = glm::min(model->Bounds[0], vertices[i+2]);
+                model->Bounds[1] = glm::max(model->Bounds[1], vertices[i]);
+                model->Bounds[1] = glm::max(model->Bounds[1], vertices[i + 1]);
+                model->Bounds[1] = glm::max(model->Bounds[1], vertices[i + 2]);
             }
         }
 
     return model;
 }
+#pragma warning(pop)
