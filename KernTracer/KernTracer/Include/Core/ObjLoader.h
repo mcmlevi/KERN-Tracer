@@ -3,8 +3,6 @@
 #include <string>
 #include <memory>
 #include <Core/Model.h>
-
-
 namespace RT
 {
 	
@@ -12,7 +10,7 @@ namespace RT
 	{
 	public:
 		ObjLoader() = default;
-		std::unique_ptr<Model> LoadModel(const std::string& filePath);
+		std::shared_ptr<Model> LoadModel(const std::string& filePath);
 	};
 }
 

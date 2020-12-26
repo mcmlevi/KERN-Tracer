@@ -165,6 +165,7 @@
     <ClCompile Include="Src\Core\JobSystem.cpp" />
     <ClCompile Include="Src\Core\ObjLoader.cpp" />
     <ClCompile Include="Src\Core\RayTracer.cpp" />
+    <ClCompile Include="Src\Core\ResourceManager.cpp" />
     <ClCompile Include="Src\Core\Timer.cpp" />
     <ClCompile Include="Src\Core\Triangle.cpp" />
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
@@ -191,7 +192,9 @@
     <ClInclude Include="Include\Core\ObjLoader.h" />
     <ClInclude Include="Include\Core\Ray.h" />
     <ClInclude Include="Include\Core\RayTracer.h" />
+    <ClInclude Include="Include\Core\ResourceManager.h" />
     <ClInclude Include="Include\Core\RingBuffer.h" />
+    <ClInclude Include="Include\Core\Scene.h" />
     <ClInclude Include="Include\Core\Timer.h" />
     <ClInclude Include="Include\Core\Triangle.h" />
     <ClInclude Include="Include\Graphics\OpenGL\glad.h" />

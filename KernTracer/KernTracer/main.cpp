@@ -11,7 +11,9 @@
 #include <Core/RayTracer.h>
 #include <Core/JobSystem.h>
 #include <Core/Timer.h>
-
+#include <Core/Scene.h>
+#include <Core/PointLight.h>
+#include <Core/ResourceManager.h>
 #define CHUNKSIZE 8
 #define FRAMES 1
 void RenderJob(const RT::RayTracer& tracer, const glm::vec2 pos, const glm::vec2 chunkSize,const glm::vec2 winsize, const RT::Camera& cam, glm::vec3* buf)
@@ -49,8 +51,15 @@ int main(void)
     }
     
 	
-    RT::Camera cam{ 70, window.GetSize(), { 1,0,20 }, { 1,0,-5 } };
-    RT::RayTracer tracer{};
+   RT::Camera cam{ 70, window.GetSize(), { 1,0,20 }, { 1,0,-5 } };
+
+   std::shared_ptr<RT::Scene> testScene = std::make_shared<RT::Scene>(); 
+   std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
+	testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,6,4 }, { 1.f,1.f,1.f }, 100.f }));
+    testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,6,-4 }, { 0.f,1.f,0.f }, 100.f }));
+	testScene->models.push_back(resourceManager->LoadModel("Cow.obj"));
+    testScene->models.push_back(resourceManager->LoadModel("ferari.obj"));
+    RT::RayTracer tracer{ testScene };
     JobSystem::Initialize();
     int currentBuffer{ 0 };
     while (!window.ShouldClose())
