@@ -14,6 +14,7 @@
 #include <Core/Scene.h>
 #include <Core/PointLight.h>
 #include <Core/ResourceManager.h>
+#include <Core/Material.h>
 #define CHUNKSIZE 8
 #define FRAMES 1
 void RenderJob(const RT::RayTracer& tracer, const glm::vec2 pos, const glm::vec2 chunkSize,const glm::vec2 winsize, const RT::Camera& cam, glm::vec3* buf)
@@ -51,17 +52,28 @@ int main(void)
     }
     
 	
-   RT::Camera cam{ 70, window.GetSize(), { 1,0,20 }, { 1,0,-5 } };
+   RT::Camera cam{ 70, window.GetSize(), {10,0,0 }, { 0,0,0 } };
 
    std::shared_ptr<RT::Scene> testScene = std::make_shared<RT::Scene>(); 
    std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
-	testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,6,4 }, { 1.f,1.f,1.f }, 100.f }));
-    testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,6,-4 }, { 0.f,1.f,0.f }, 100.f }));
-	testScene->models.push_back(resourceManager->LoadModel("Cow.obj"));
-    testScene->models.push_back(resourceManager->LoadModel("ferari.obj"));
+	//testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 5,6,4 }, { 1.f,1.f,1.f }, 500.f }));
+   // testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { -5,6,4 }, { 1.f,1.f,1.f }, 500.f }));
+    testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 10,0,0 }, { 1.f,1.f,1.f }, 500.f }));
+	std::shared_ptr<RT::Model> cow1 = std::make_shared<RT::Model>();
+    cow1->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
+    cow1->material = *resourceManager->GetMaterial("Default");
+	testScene->models.push_back(cow1);
+   // testScene->models.push_back(resourceManager->LoadModel("ferari.obj"));
+
+    std::shared_ptr<RT::Material> redMaterial{ resourceManager->GetMaterial("RedMaterial") };
+    redMaterial->baseColor = { 1.f,1.f,1.f };
+    cow1->material = *cow1->modelData->loadedInMaterial;
+    cow1->material.baseColor = { 1.f,1.f,1.f };
+	
     RT::RayTracer tracer{ testScene };
     JobSystem::Initialize();
     int currentBuffer{ 0 };
+    float deltaTime{};
     while (!window.ShouldClose())
     {
         RT::Timer timer{};
@@ -94,7 +106,10 @@ int main(void)
 		{
             currentBuffer = 0;
 		}
-        printf("%f \n", timer.GetElapsedTimeInMS());
+
+        cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *deltaTime * 0.001f);
+        deltaTime = timer.GetElapsedTimeInMS();
+        printf("FPS: %f, FrameTime: %f \n",1000.f / deltaTime,deltaTime );
     }
  
     exit(EXIT_SUCCESS);

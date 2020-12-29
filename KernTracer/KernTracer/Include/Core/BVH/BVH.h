@@ -15,7 +15,7 @@ namespace RT
 	{
 	public:
 		BVH() = default;
-		void BuildBVH(RT::Model& model);
+		void BuildBVH(RT::ModelData& model);
 		const RT::Triangle* Intersect(const RT::Model& model, const RT::Ray& ray, float& t) const;
 
 		private:
@@ -40,15 +40,15 @@ namespace RT
 
 			struct SubDivideInfo
 			{
-				RT::Model& Model;
+				RT::ModelData& Model;
 				uint32_t Left;
 				uint32_t& Poolptr;
 				float CurrentNodeArea{ FP_INFINITE };
 			};
 
 		void Subdivide(RT::BVHNode& currentNode, SubDivideInfo& info);
-		PartionInfo Partion(std::array<glm::vec3,2>& Bounds, RT::Model& model,uint32_t first, uint32_t count, float currentCost);
-		const RT::Triangle* TraverseBVH(const RT::Model& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const;
+		PartionInfo Partion(std::array<glm::vec3,2>& Bounds, RT::ModelData& model,uint32_t first, uint32_t count, float currentCost);
+		const RT::Triangle* TraverseBVH(const RT::ModelData& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const;
 		std::vector<RT::BVHNode> m_Nodes;
 		
 	};

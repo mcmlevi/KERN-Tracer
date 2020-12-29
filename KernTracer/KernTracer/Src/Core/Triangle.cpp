@@ -3,7 +3,7 @@
 
 #include <glm/ext/scalar_constants.hpp>
 
-RT::Triangle::Triangle(const std::array<glm::vec3, 3>& verts):m_vertex{verts}
+RT::Triangle::Triangle(const std::array<glm::vec3, 3>& verts, const std::array<glm::vec2, 3>& texturecoords):m_vertex{verts},m_textureCoords{texturecoords}
 {
 	glm::vec3 v{ m_vertex[1] - m_vertex[0] };
 	glm::vec3 w{ m_vertex[2] - m_vertex[0] };
@@ -54,4 +54,9 @@ glm::vec3 RT::Triangle::GetCenter() const
 const std::array<glm::vec3, 3>& RT::Triangle::GetVerts() const
 {
 	return m_vertex;
+}
+
+const std::array<glm::vec2, 3>& RT::Triangle::GetTextureCoords() const
+{
+	return m_textureCoords;
 }

@@ -2,7 +2,8 @@
 #include <algorithm>
 #include "Core/BVH/BVH.h"
 #include <Core/Triangle.h>
-void RT::BVH::BuildBVH(RT::Model& model)
+#include <Core/Model.h>
+void RT::BVH::BuildBVH(RT::ModelData& model)
 {
 	m_Nodes.resize(2 * model.triangles.size() + 1);
 	m_Nodes[0].Bounds = model.Bounds;
@@ -22,10 +23,11 @@ void RT::BVH::BuildBVH(RT::Model& model)
 const RT::Triangle* RT::BVH::Intersect(const RT::Model& model, const RT::Ray& ray, float& t) const
 {
 	float boxDistance{ INFINITY };
-	const RT::Triangle* triangle = TraverseBVH(model,m_Nodes[0], ray, boxDistance, t);
+	RT::Ray transformedRay{ model.transform.GetTransform() * glm::vec4{ray.origin,1.f},model.transform.GetTransform() * glm::vec4{ray.direction,0.f} };
+	const RT::Triangle* triangle = TraverseBVH(*model.modelData.get(),m_Nodes[0], transformedRay, boxDistance, t);
 	return triangle;
 }
-const RT::Triangle* RT::BVH::TraverseBVH(const RT::Model& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const
+const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const
 {
 	// Exit if we miss the node
 	float temp{};
@@ -63,31 +65,39 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::Model& model, const BVHNode& 
 		bool hitLeft = m_Nodes[currentNode.left].Intersect(ray, DistanceLeftBox);
 		bool hitRight = m_Nodes[currentNode.left + 1].Intersect(ray, DistanceRightBox);
 
-		if(hitLeft && hitRight && glm::distance(DistanceLeftBox,DistanceRightBox) <= FLT_EPSILON)
+		if(hitLeft && hitRight)
 		{
 			leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
 			rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
 		}
-		else
+		else if(hitLeft)
 		{
-			if(DistanceLeftBox < 0 && DistanceRightBox < 0)
-			{
-				DistanceLeftBox *= -1;
-				DistanceRightBox *= -1;
-			}
-			if(DistanceLeftBox < DistanceRightBox)
-			{
-				leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
-				if(leftShape == nullptr)
-					rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
-			}
-			else
-			{
-				rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
-				if (rightShape == nullptr)
-					leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
-			}
+			leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
 		}
+		else if(hitRight)
+		{
+			rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
+		}
+		//else
+		//{
+		//	if(DistanceLeftBox < 0 && DistanceRightBox < 0)
+		//	{
+		//		DistanceLeftBox *= -1;
+		//		DistanceRightBox *= -1;
+		//	}
+		//	if(DistanceLeftBox < DistanceRightBox)
+		//	{
+		//		leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
+		//		if(leftShape == nullptr)
+		//			rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
+		//	}
+		//	else
+		//	{
+		//		rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
+		//		if (rightShape == nullptr)
+		//			leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
+		//	}
+		//}
 		if (leftShape == nullptr && rightShape != nullptr)
 		{
 			return rightShape;
@@ -142,7 +152,7 @@ void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo& info)
 	
 }
 
-RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::Model& model, uint32_t first, uint32_t count,float currentCost)
+RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::ModelData& model, uint32_t first, uint32_t count,float currentCost)
 {
 	PartionInfo info{eAxis::INVALID,INFINITY};
 	int SplitIndex{};

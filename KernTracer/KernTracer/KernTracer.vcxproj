@@ -167,11 +167,13 @@
     <ClCompile Include="Src\Core\RayTracer.cpp" />
     <ClCompile Include="Src\Core\ResourceManager.cpp" />
     <ClCompile Include="Src\Core\Timer.cpp" />
+    <ClCompile Include="Src\Core\Transform.cpp" />
     <ClCompile Include="Src\Core\Triangle.cpp" />
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Src\Graphics\Texture.cpp" />
     <ClCompile Include="Src\Graphics\Window\Window.cpp" />
     <ClCompile Include="Src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -187,6 +189,7 @@
     <ClInclude Include="Include\Core\BVH\BVHNode.h" />
     <ClInclude Include="Include\Core\Camera.h" />
     <ClInclude Include="Include\Core\JobSystem.h" />
+    <ClInclude Include="Include\Core\Material.h" />
     <ClInclude Include="Include\Core\Model.h" />
     <ClInclude Include="Include\Core\PointLight.h" />
     <ClInclude Include="Include\Core\ObjLoader.h" />
@@ -196,9 +199,11 @@
     <ClInclude Include="Include\Core\RingBuffer.h" />
     <ClInclude Include="Include\Core\Scene.h" />
     <ClInclude Include="Include\Core\Timer.h" />
+    <ClInclude Include="Include\Core\Transform.h" />
     <ClInclude Include="Include\Core\Triangle.h" />
     <ClInclude Include="Include\Graphics\OpenGL\glad.h" />
     <ClInclude Include="Include\Graphics\OpenGL\khrplatform.h" />
+    <ClInclude Include="Include\Graphics\Texture.h" />
     <ClInclude Include="Include\Graphics\Window\Window.h" />
     <ClInclude Include="Include\pch.h" />
     <ClInclude Include="Include\tiny_obj_loader.h" />
