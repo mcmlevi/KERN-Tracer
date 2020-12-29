@@ -107,7 +107,7 @@ int main(void)
             currentBuffer = 0;
 		}
 
-        cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *deltaTime * 0.001f);
+       // cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *deltaTime * 0.001f);
         deltaTime = timer.GetElapsedTimeInMS();
         printf("FPS: %f, FrameTime: %f \n",1000.f / deltaTime,deltaTime );
     }

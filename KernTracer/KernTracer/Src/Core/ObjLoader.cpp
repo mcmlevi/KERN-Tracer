@@ -6,11 +6,9 @@
 #include <tiny_obj_loader.h>
 #include <Core/ResourceManager.h>
 #include <Core/Material.h>
-std::string getBaseDir(const std::string& str)
-{
-    size_t found = str.find_last_of("/\\");
-    return str.substr(0, found);
-}
+
+#include <Utility/Utility.h>
+
 std::shared_ptr<RT::ModelData> RT::ObjLoader::LoadModel(const std::string& filePath, ResourceManager& resourceManager)
 {
     tinyobj::attrib_t attrib;
@@ -20,7 +18,7 @@ std::shared_ptr<RT::ModelData> RT::ObjLoader::LoadModel(const std::string& fileP
     std::string warn;
     std::string err;
 
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str(), getBaseDir(filePath).c_str());
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str(), RT::getBaseDir(filePath).c_str());
 
     if (!warn.empty())
     {

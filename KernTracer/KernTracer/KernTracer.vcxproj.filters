@@ -152,5 +152,8 @@
     <ClInclude Include="Include\Graphics\Texture.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Utility\Utility.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

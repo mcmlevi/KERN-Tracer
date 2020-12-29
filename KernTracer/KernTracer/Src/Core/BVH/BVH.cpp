@@ -3,6 +3,29 @@
 #include "Core/BVH/BVH.h"
 #include <Core/Triangle.h>
 #include <Core/Model.h>
+#include <Core/JobSystem.h>
+
+
+struct Header
+{
+	uint32_t ProgramName = 668672;
+	uint32_t Version = 0001;
+
+	uint32_t NumberOfTriangles;
+	uint32_t SizeOfTriangle;
+	uint32_t TotalSizeOFTriangles;
+
+	uint32_t NumberOfNodes;
+	uint32_t SizeOfNode = 32;
+	uint32_t TotalSizeOfNodes;
+};
+
+struct Body
+{
+	RT::Triangle* Triangles;
+	RT::BVHNode* Nodes;
+};
+
 void RT::BVH::BuildBVH(RT::ModelData& model)
 {
 	m_Nodes.resize(2 * model.triangles.size() + 1);
@@ -18,6 +41,7 @@ void RT::BVH::BuildBVH(RT::ModelData& model)
 	float BoxSurface{ 2 * boxSize.z * boxSize.y + 2 * boxSize.z * boxSize.x + 2 * boxSize.x * boxSize.y };
 	SubDivideInfo info{ model,0,poolptr,BoxSurface };
 	Subdivide(m_Nodes[0], info);
+	//JobSystem::Wait(&m_counter);
 }
 
 const RT::Triangle* RT::BVH::Intersect(const RT::Model& model, const RT::Ray& ray, float& t) const
@@ -27,6 +51,63 @@ const RT::Triangle* RT::BVH::Intersect(const RT::Model& model, const RT::Ray& ra
 	const RT::Triangle* triangle = TraverseBVH(*model.modelData.get(),m_Nodes[0], transformedRay, boxDistance, t);
 	return triangle;
 }
+
+void RT::BVH::Serialize(RT::ModelData& model, const std::string& baseDir, const std::string& modelName)
+{
+	// Create File
+	std::string fileName = { baseDir +"/"+ modelName };
+	FILE* file = fopen(fileName.c_str(), "wb");
+	assert(file != nullptr && "Failed to create file");
+	// Save Header
+	Header fileHeader;
+	fileHeader.NumberOfTriangles = model.triangles.size();
+	fileHeader.SizeOfTriangle = sizeof(RT::Triangle);
+	fileHeader.TotalSizeOFTriangles = fileHeader.NumberOfTriangles * fileHeader.SizeOfTriangle;
+	fileHeader.NumberOfNodes = m_Nodes.size();
+	fileHeader.TotalSizeOfNodes = fileHeader.SizeOfNode * fileHeader.NumberOfNodes;
+
+	fwrite(&fileHeader, sizeof(fileHeader) , 1, file);
+	// Save body data
+	fwrite(model.triangles.data(), sizeof(RT::Triangle), fileHeader.NumberOfTriangles, file);
+	fwrite(m_Nodes.data(), sizeof(BVHNode), fileHeader.NumberOfNodes, file);
+
+	fclose(file);
+	
+	
+}
+
+bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, const std::string& modelName)
+{
+	// Create File
+	std::string fileName = { rootDir + "/" + modelName };
+	FILE* file = fopen(fileName.c_str(), "rb");
+	if(file == nullptr)
+		return false;
+	Header headerCheck{};
+	Header readHeader;
+	size_t result;
+	result = fread(&readHeader, sizeof(Header), 1, file);
+	if(readHeader.Version < headerCheck.Version)
+	{
+		fclose(file);
+		return false;
+	}
+	Body readBody;
+	
+	readBody.Triangles = (RT::Triangle*)malloc(readHeader.TotalSizeOFTriangles);
+	readBody.Nodes = (RT::BVHNode*)malloc(readHeader.TotalSizeOfNodes);
+	result = fread(readBody.Triangles, readHeader.SizeOfTriangle, readHeader.NumberOfTriangles, file);
+	result = fread(readBody.Nodes, readHeader.SizeOfNode, readHeader.NumberOfNodes, file);
+
+	memcpy(model.triangles.data(), readBody.Triangles, readHeader.TotalSizeOFTriangles);
+	m_Nodes.resize(readHeader.NumberOfNodes);
+	memcpy(m_Nodes.data(), readBody.Nodes, readHeader.TotalSizeOfNodes);
+	fclose(file);
+	free((void*)readBody.Triangles);
+	free((void*)readBody.Nodes);
+	return true;
+}
+
 const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const
 {
 	// Exit if we miss the node
@@ -118,7 +199,7 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNo
 	}
 }
 
-void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo& info)
+void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo info)
 {
 	
 
@@ -130,6 +211,7 @@ void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo& info)
 		return;
 	}
 	
+	m_lock.lock();
 	RT::BVHNode& leftNode = m_Nodes[info.Poolptr];
 	leftNode.Bounds = partionResult.LeftBounds;
 	leftNode.left = info.Left;
@@ -143,13 +225,14 @@ void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo& info)
 	rightNode.count = currentNode.count - partionResult.Pivot;
 	SubDivideInfo rightInfo{info.Model,rightNode.left,info.Poolptr,partionResult.SurfaceArea[1]};
 	info.Poolptr++;
+	m_lock.unlock();
 	
 	currentNode.count = 0;
 	
 	Subdivide(leftNode, leftInfo);
 	Subdivide(rightNode, rightInfo);
-
-	
+	//JobSystem::Execute([&leftNode, leftInfo,this]() {   }, &m_counter);
+	//JobSystem::Execute([&rightNode, rightInfo, this]() { }, &m_counter);
 }
 
 RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::ModelData& model, uint32_t first, uint32_t count,float currentCost)
