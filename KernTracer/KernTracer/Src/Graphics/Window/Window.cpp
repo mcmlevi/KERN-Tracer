@@ -20,7 +20,11 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-
+void window_size_callback(GLFWwindow* window, int width, int height)
+{
+    RT::Window* RTWindow = (RT::Window*)glfwGetWindowUserPointer(window);
+    RTWindow->SetNewSize(width, height);
+}
 
 
 RT::Window::Window(unsigned int width, unsigned int height, const std::string& windowName):
@@ -70,6 +74,16 @@ void RT::Window::DrawPixelBuffer(glm::vec<2, unsigned> size, unsigned format, un
     DrawPixelBuffer(size.x, size.y, format, type, pixelBuf);
 }
 
+glm::vec3* RT::Window::GetScreenBuffer()
+{
+    return m_buffer;
+}
+
+GLFWwindow* RT::Window::GetWindow()
+{
+    return m_Window;
+}
+
 void RT::Window::InitWindow()
 {
 
@@ -92,4 +106,15 @@ void RT::Window::InitWindow()
     glfwMakeContextCurrent(m_Window);
     gladLoadGL();
     glfwSwapInterval(0);
+    glfwSetWindowSizeCallback(m_Window, window_size_callback);
+    glfwSetWindowUserPointer(m_Window, (void*)this);
+	
+    m_buffer = { (glm::vec3*)malloc(sizeof(glm::vec3) * m_WindowSize.x * m_WindowSize.y) };
+}
+void RT::Window::SetNewSize(unsigned width, unsigned height)
+{
+    m_WindowSize.x = width;
+    m_WindowSize.y = height;
+    free(m_buffer);
+    m_buffer = (glm::vec3*)malloc(sizeof(glm::vec3) * m_WindowSize.x * m_WindowSize.y);
 }

@@ -37,6 +37,18 @@
     <Filter Include="Source Files\Graphics\OpenGL">
       <UniqueIdentifier>{f2afb3d1-2e91-40b8-9531-63ab52d1f103}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\ImGui">
+      <UniqueIdentifier>{8fc5c197-ab9d-47ba-bdfa-4fc817106ab7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics\ImGui">
+      <UniqueIdentifier>{b4c9d550-865b-402f-a0f9-716079106855}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics\ImGui\Layers">
+      <UniqueIdentifier>{7782e9aa-ebaf-4a17-a8ce-74a48c5acf47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics\ImGui\Layers">
+      <UniqueIdentifier>{c881567d-1517-433d-8114-8c147afcd5bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
@@ -83,6 +95,39 @@
     </ClCompile>
     <ClCompile Include="Src\Graphics\Texture.cpp">
       <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_demo.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_draw.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_tables.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_widgets.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_impl_glfw.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\ImGuiInstance.cpp">
+      <Filter>Source Files\Graphics\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\Layers\DockingLayer.cpp">
+      <Filter>Source Files\Graphics\ImGui\Layers</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\Layers\StatLayer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +199,45 @@
     </ClInclude>
     <ClInclude Include="Include\Utility\Utility.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imconfig.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imgui.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imgui_internal.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imstb_rectpack.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imstb_textedit.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imstb_truetype.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\Layers\IImGuiLayer.h">
+      <Filter>Header Files\Graphics\ImGui\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\ImGuiInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imgui_impl_opengl3.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\imgui_impl_glfw.h">
+      <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\Layers\DockingLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\Layers\StatLayer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

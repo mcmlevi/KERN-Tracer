@@ -95,7 +95,7 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	Header readHeader;
 	size_t result;
 	result = fread(&readHeader, sizeof(Header), 1, file);
-	assert(result < 1);
+	assert(result != 0);
 	if(readHeader.Version < headerCheck.Version)
 	{
 		fclose(file);

@@ -163,7 +163,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Application.cpp" />
     <ClCompile Include="Src\Core\BVH\BVH.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\JobSystem.cpp" />
@@ -173,6 +177,37 @@
     <ClCompile Include="Src\Core\Timer.cpp" />
     <ClCompile Include="Src\Core\Transform.cpp" />
     <ClCompile Include="Src\Core\Triangle.cpp" />
+    <ClCompile Include="Src\Graphics\ImGui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\ImGuiInstance.cpp" />
+    <ClCompile Include="Src\Graphics\ImGui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_impl_glfw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\Layers\DockingLayer.cpp" />
+    <ClCompile Include="Src\Graphics\ImGui\Layers\StatLayer.cpp" />
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -189,6 +224,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Application.h" />
     <ClInclude Include="Include\Core\BVH\BVH.h" />
     <ClInclude Include="Include\Core\BVH\BVHNode.h" />
     <ClInclude Include="Include\Core\Camera.h" />
@@ -205,6 +241,18 @@
     <ClInclude Include="Include\Core\Timer.h" />
     <ClInclude Include="Include\Core\Transform.h" />
     <ClInclude Include="Include\Core\Triangle.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imconfig.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imgui.h" />
+    <ClInclude Include="Include\Graphics\ImGui\ImGuiInstance.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imgui_internal.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imstb_textedit.h" />
+    <ClInclude Include="Include\Graphics\ImGui\imstb_truetype.h" />
+    <ClInclude Include="Include\Graphics\ImGui\Layers\DockingLayer.h" />
+    <ClInclude Include="Include\Graphics\ImGui\Layers\IImGuiLayer.h" />
+    <ClInclude Include="Include\Graphics\ImGui\Layers\StatLayer.h" />
     <ClInclude Include="Include\Graphics\OpenGL\glad.h" />
     <ClInclude Include="Include\Graphics\OpenGL\khrplatform.h" />
     <ClInclude Include="Include\Graphics\Texture.h" />
