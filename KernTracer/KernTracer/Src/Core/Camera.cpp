@@ -9,6 +9,8 @@ RT::Camera::Camera(const float fov, const glm::vec2& size, const glm::vec3& orig
 	m_view = glm::lookAt(m_position, m_lookAt, { 0,-1,0 });
 	m_aspectRatio = m_size.x / m_size.y;
 	m_angle = (glm::tan((glm::pi<float>() * m_fov / 180.f) / 2.f));
+	m_proj = glm::perspective(glm::radians(fov /2.f), m_aspectRatio, 0.1f, 1000.f);
+	
 }
 
 RT::Ray RT::Camera::GetRayAt(const glm::vec2& screenPos) const
@@ -25,4 +27,14 @@ RT::Ray RT::Camera::GetRayAt(const glm::vec2& screenPos) const
 	//const glm::vec3 origin{ m_view * glm::vec4{m_position,1.f} };
 
 	return Ray{ m_position,raydir };
+}
+
+const glm::mat4& RT::Camera::GetProjection() const
+{
+	return m_proj;
+}
+
+glm::mat4 RT::Camera::GetView() const
+{
+	return m_view;
 }

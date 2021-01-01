@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
+#include <memory>
 namespace RT
 {
 	struct Model;
 	struct PointLight;
 	class Camera;
+
 	struct Scene
 	{
 		std::vector<std::shared_ptr<RT::Model>> models;

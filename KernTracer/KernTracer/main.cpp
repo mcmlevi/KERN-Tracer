@@ -15,6 +15,7 @@
 #include <Core/PointLight.h>
 #include <Core/ResourceManager.h>
 #include <Core/Material.h>
+#include <Core/BVH/BVH.h>
 #define CHUNKSIZE 8
 #define FRAMES 1
 void RenderJob(const RT::RayTracer& tracer, const glm::vec2 pos, const glm::vec2 chunkSize,const glm::vec2 winsize, const RT::Camera& cam, glm::vec3* buf)
@@ -52,13 +53,13 @@ int main(void)
     }
     
 	
-   RT::Camera cam{ 70, window.GetSize(), {10,0,0 }, { 0,0,0 } };
-
-   std::shared_ptr<RT::Scene> testScene = std::make_shared<RT::Scene>(); 
+   std::shared_ptr<RT::Camera> cam = std::make_shared<RT::Camera>(RT::Camera{ 70, window.GetSize(), {0,3.f,15.f }, { 0,0,0 } });
+   std::shared_ptr<RT::Scene> testScene = std::make_shared<RT::Scene>();
+   testScene->activeCam = cam;
    std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
 	//testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 5,6,4 }, { 1.f,1.f,1.f }, 500.f }));
    // testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { -5,6,4 }, { 1.f,1.f,1.f }, 500.f }));
-    testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 10,0,0 }, { 1.f,1.f,1.f }, 500.f }));
+    testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,10,8 }, { 1.f,1.f,1.f }, 50.f }));
 	std::shared_ptr<RT::Model> cow1 = std::make_shared<RT::Model>();
     cow1->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
     cow1->material = *resourceManager->GetMaterial("Default");
@@ -77,6 +78,7 @@ int main(void)
     while (!window.ShouldClose())
     {
         RT::Timer timer{};
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         const glm::vec2 winSize = window.GetSize();
     	for (unsigned y = 0; y < window.GetSize().y; y+= CHUNKSIZE)
         {
@@ -92,7 +94,7 @@ int main(void)
                     chunk.x = winSize.x - x;
             	}
             	glm::vec2 pos{ x,y };
-                JobSystem::Execute([&tracer,pos,chunk,winSize,&cam,&buffers,currentBuffer]() {RenderJob(tracer,pos,chunk, winSize, cam, buffers[currentBuffer]); },&counters[currentBuffer]);
+                JobSystem::Execute([&tracer,pos,chunk,winSize,&cam,&buffers,currentBuffer]() {RenderJob(tracer,pos,chunk, winSize, *cam.get(), buffers[currentBuffer]); },&counters[currentBuffer]);
             }
         }
 #pragma warning(push,0)
@@ -107,7 +109,7 @@ int main(void)
             currentBuffer = 0;
 		}
 
-       // cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *deltaTime * 0.001f);
+        cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *deltaTime * 0.001f);
         deltaTime = timer.GetElapsedTimeInMS();
         printf("FPS: %f, FrameTime: %f \n",1000.f / deltaTime,deltaTime );
     }

@@ -12,7 +12,7 @@
 namespace RT
 {
 
-
+	class Camera;
 	class BVH
 	{
 	public:

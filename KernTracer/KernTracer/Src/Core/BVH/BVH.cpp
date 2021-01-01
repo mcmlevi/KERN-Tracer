@@ -1,14 +1,22 @@
+
 #include "pch.h"
 #include <algorithm>
 #include "Core/BVH/BVH.h"
 #include <Core/Triangle.h>
 #include <Core/Model.h>
 #include <Core/JobSystem.h>
+#include <Core/Camera.h>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_projection.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <Graphics/OpenGL/glad.h>
 
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 struct Header
 {
-	uint32_t ProgramName = 668672;
+	uint32_t ProgramName = 668672; // BVH
 	uint32_t Version = 0001;
 
 	uint32_t NumberOfTriangles;
@@ -47,8 +55,8 @@ void RT::BVH::BuildBVH(RT::ModelData& model)
 const RT::Triangle* RT::BVH::Intersect(const RT::Model& model, const RT::Ray& ray, float& t) const
 {
 	float boxDistance{ INFINITY };
-	RT::Ray transformedRay{ model.transform.GetTransform() * glm::vec4{ray.origin,1.f},model.transform.GetTransform() * glm::vec4{ray.direction,0.f} };
-	const RT::Triangle* triangle = TraverseBVH(*model.modelData.get(),m_Nodes[0], transformedRay, boxDistance, t);
+	
+	const RT::Triangle* triangle = TraverseBVH(*model.modelData.get(),m_Nodes[0], ray, boxDistance, t);
 	return triangle;
 }
 
@@ -87,6 +95,7 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	Header readHeader;
 	size_t result;
 	result = fread(&readHeader, sizeof(Header), 1, file);
+	assert(result < 1);
 	if(readHeader.Version < headerCheck.Version)
 	{
 		fclose(file);
@@ -97,8 +106,9 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	readBody.Triangles = (RT::Triangle*)malloc(readHeader.TotalSizeOFTriangles);
 	readBody.Nodes = (RT::BVHNode*)malloc(readHeader.TotalSizeOfNodes);
 	result = fread(readBody.Triangles, readHeader.SizeOfTriangle, readHeader.NumberOfTriangles, file);
+	assert(result != 0);
 	result = fread(readBody.Nodes, readHeader.SizeOfNode, readHeader.NumberOfNodes, file);
-
+	assert(result != 0);
 	memcpy(model.triangles.data(), readBody.Triangles, readHeader.TotalSizeOFTriangles);
 	m_Nodes.resize(readHeader.NumberOfNodes);
 	memcpy(m_Nodes.data(), readBody.Nodes, readHeader.TotalSizeOfNodes);
@@ -107,6 +117,7 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	free((void*)readBody.Nodes);
 	return true;
 }
+
 
 const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const
 {
@@ -121,7 +132,7 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNo
 	{
 		const RT::Triangle* closestShape{nullptr};
 		// Find closest object
-		for (int i = 0; i < currentNode.count; ++i)
+		for (uint32_t i = 0; i < currentNode.count; ++i)
 		{
 			int index = i + currentNode.left;
 			float distanceToTriange{INFINITY};
@@ -159,26 +170,6 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNo
 		{
 			rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
 		}
-		//else
-		//{
-		//	if(DistanceLeftBox < 0 && DistanceRightBox < 0)
-		//	{
-		//		DistanceLeftBox *= -1;
-		//		DistanceRightBox *= -1;
-		//	}
-		//	if(DistanceLeftBox < DistanceRightBox)
-		//	{
-		//		leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
-		//		if(leftShape == nullptr)
-		//			rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
-		//	}
-		//	else
-		//	{
-		//		rightShape = TraverseBVH(model, m_Nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
-		//		if (rightShape == nullptr)
-		//			leftShape = TraverseBVH(model, m_Nodes[currentNode.left], ray, boxDistance, objectDistance);
-		//	}
-		//}
 		if (leftShape == nullptr && rightShape != nullptr)
 		{
 			return rightShape;
@@ -187,8 +178,8 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNo
 		{
 			float ld{ INFINITY };
 			float rd{ INFINITY };
-			bool lh = leftShape->Intersect(ray, ld);
-			bool rh = rightShape->Intersect(ray, rd);
+			leftShape->Intersect(ray, ld);
+			rightShape->Intersect(ray, rd);
 			if (rd < ld)
 				return rightShape;
 			else
@@ -258,7 +249,7 @@ RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::Mode
 			uint32_t pivot{ 0 };
 			glm::vec3 boundsLeft[2]{ glm::vec3{INFINITY,INFINITY,INFINITY},glm::vec3{-INFINITY,-INFINITY,-INFINITY} };
 			glm::vec3 boundsRight[2]{ glm::vec3{INFINITY,INFINITY,INFINITY},glm::vec3{-INFINITY,-INFINITY,-INFINITY} };
-			for (int triangle = first; triangle < first + count; ++triangle)
+			for (unsigned triangle = first; triangle < first + count; ++triangle)
 			{
 				if(model.triangles[triangle].GetCenter()[axis] <= currentSplitPoint)
 				{
@@ -296,8 +287,6 @@ RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::Mode
 
 			if(splittingCost < cost)
 			{
-				if (pivot == 0)
-					__debugbreak();
 				cost = splittingCost;
 				info.SplittingCost = splittingCost;
 				info.SplitAxis = static_cast<eAxis>(axis);
@@ -325,3 +314,4 @@ RT::BVH::PartionInfo RT::BVH::Partion(std::array<glm::vec3, 2>& Bounds, RT::Mode
 }
 
 
+#pragma GCC diagnostic pop

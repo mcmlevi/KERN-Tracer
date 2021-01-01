@@ -2,8 +2,12 @@
 #include <glm/vec3.hpp>
 #include <memory>
 #include <Graphics/Texture.h>
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
+#include <Core/Triangle.h>
 namespace RT
 {
+	class Triangle;
 	struct Material
 	{
 		glm::vec3 baseColor{ 1.f,1.f,1.f };
@@ -40,7 +44,7 @@ namespace RT
 			x = glm::clamp(x, 0, textureSize.x);
 			int y{ static_cast<int>(P.y * textureSize.y - 1) };
 			y = glm::clamp(y, 0, textureSize.y);
-			int index = { (y * textureSize.x * 3 + x * 3)};
+			int index = { (y * textureSize.x * channels + x * channels)};
 			//return glm::vec3{ 1.f,1.f,1.f };
 			return glm::vec3{ static_cast<float>(texptr[index] / 255.f),static_cast<float>(texptr[index + 1] / 255.f),static_cast<float>(texptr[index + 2] / 255.f) };
 	

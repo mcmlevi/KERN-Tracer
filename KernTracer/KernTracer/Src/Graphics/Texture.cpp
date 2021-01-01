@@ -1,7 +1,10 @@
 #include <pch.h>
 #include <Graphics/Texture.h>
 #define STB_IMAGE_IMPLEMENTATION
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #include <stbi/stb_image.h>
+#pragma GCC diagnostic pop
 RT::Texture::~Texture()
 {
 	stbi_image_free(m_pixelArray);

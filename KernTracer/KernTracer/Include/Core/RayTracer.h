@@ -1,12 +1,14 @@
 #pragma once
-#include <core/Ray.h>
+#include <Core/Ray.h>
+#include <memory>
+#include <glm/vec3.hpp>
 namespace RT
 {
-	class Scene;
+	struct Scene;
 	class Triangle;
 	class Camera;
 	struct Material;
-	
+	struct Model;
 	class RayTracer
 	{
 	public:
@@ -14,8 +16,18 @@ namespace RT
 		void ChangeSchene(std::shared_ptr<Scene> newSceneToRender);
 		glm::vec3 Trace(const Ray& ray, int currentDepth) const;
 	private:
-
-		glm::vec3 ApplyShading(const RT::Material* material,const glm::vec3& hitPoint, const RT::Triangle* triangle, const glm::vec3& rayOrigin) const;
+		struct HitInfo
+		{
+			bool Hit;
+			float Distance;
+			const Triangle* HitTriangle;
+			std::shared_ptr<RT::Model> HitModel;
+			const RT::Material* Material;
+			glm::vec3 WorldIntersect;
+			glm::vec3 LocalIntersect;
+		};
+		
+		glm::vec3 ApplyShading(const HitInfo& hitInfo, const glm::vec3& rayOrigin) const;
 		int m_maxDepth{ 3 };
 		std::shared_ptr<Scene> m_activeScene{nullptr};
 	};

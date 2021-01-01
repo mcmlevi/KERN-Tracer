@@ -58,8 +58,6 @@ std::shared_ptr<RT::ModelData> RT::ObjLoader::LoadModel(const std::string& fileP
             std::vector<glm::vec3> vertices;
             std::vector<glm::vec2> texturecoords;
             std::vector<uint16_t> indicies;
-            int materialCounter{};
-            int materialIndex{ 0 };
             for (const auto& index : shape.mesh.indices)
             {
 
@@ -90,6 +88,8 @@ std::shared_ptr<RT::ModelData> RT::ObjLoader::LoadModel(const std::string& fileP
                 vertices.push_back(vert);
                
             }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
             for (int i = 0; i < vertices.size(); i += 3)
             {
                 model->triangles.push_back(RT::Triangle{ {vertices[i],vertices[i + 1],vertices[i + 2] },{texturecoords[i],texturecoords[i + 1],texturecoords[i + 2]} });
@@ -100,6 +100,7 @@ std::shared_ptr<RT::ModelData> RT::ObjLoader::LoadModel(const std::string& fileP
                 model->Bounds[1] = glm::max(model->Bounds[1], vertices[i + 1]);
                 model->Bounds[1] = glm::max(model->Bounds[1], vertices[i + 2]);
             }
+#pragma GCC diagnostic pop      	
         }
 
     return model;
