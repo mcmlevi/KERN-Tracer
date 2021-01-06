@@ -163,12 +163,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Include\Core\RenderingOptions.h">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\Application.cpp" />
     <ClCompile Include="Src\Core\BVH\BVH.cpp" />
+    <ClCompile Include="Src\Core\BVH\SceneBVH.cpp" />
     <ClCompile Include="Src\Core\Camera.cpp" />
     <ClCompile Include="Src\Core\JobSystem.cpp" />
     <ClCompile Include="Src\Core\ObjLoader.cpp" />
@@ -207,6 +212,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\Graphics\ImGui\Layers\DockingLayer.cpp" />
+    <ClCompile Include="Src\Graphics\ImGui\Layers\OptionsLayer.cpp" />
     <ClCompile Include="Src\Graphics\ImGui\Layers\StatLayer.cpp" />
     <ClCompile Include="Src\Graphics\OpenGL\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -227,6 +233,7 @@
     <ClInclude Include="Include\Application.h" />
     <ClInclude Include="Include\Core\BVH\BVH.h" />
     <ClInclude Include="Include\Core\BVH\BVHNode.h" />
+    <ClInclude Include="Include\Core\BVH\SceneBVH.h" />
     <ClInclude Include="Include\Core\Camera.h" />
     <ClInclude Include="Include\Core\JobSystem.h" />
     <ClInclude Include="Include\Core\Material.h" />
@@ -252,6 +259,7 @@
     <ClInclude Include="Include\Graphics\ImGui\imstb_truetype.h" />
     <ClInclude Include="Include\Graphics\ImGui\Layers\DockingLayer.h" />
     <ClInclude Include="Include\Graphics\ImGui\Layers\IImGuiLayer.h" />
+    <ClInclude Include="Include\Graphics\ImGui\Layers\OptionsLayer.h" />
     <ClInclude Include="Include\Graphics\ImGui\Layers\StatLayer.h" />
     <ClInclude Include="Include\Graphics\OpenGL\glad.h" />
     <ClInclude Include="Include\Graphics\OpenGL\khrplatform.h" />

@@ -11,8 +11,8 @@ namespace RT
 	struct Material
 	{
 		glm::vec3 baseColor{ 1.f,1.f,1.f };
-		float reflectiveIndex;
-		float refractiveIndex;
+		float reflectiveIndex = 0;
+		float refractiveIndex = 0;
 		std::shared_ptr<Texture> texture;
 		glm::vec3 GetTexture(const glm::vec3 intersectionPoint,
 			const RT::Triangle& triangle) const;

@@ -10,6 +10,7 @@
 #include <glm/ext/matrix_projection.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <Graphics/OpenGL/glad.h>
+#include <glm/geometric.hpp>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -34,9 +35,15 @@ struct Body
 	RT::BVHNode* Nodes;
 };
 
+RT::BVH::~BVH()
+{
+	_aligned_free(m_Nodes);
+}
+
 void RT::BVH::BuildBVH(RT::ModelData& model)
 {
-	m_Nodes.resize(2 * model.triangles.size() + 1);
+	m_numOfNodes = (2 * model.triangles.size() + 1);
+	m_Nodes =(RT::BVHNode*)_aligned_malloc(m_numOfNodes * sizeof(BVHNode), 32);
 	m_Nodes[0].Bounds = model.Bounds;
 	m_Nodes[0].count = static_cast<uint32_t>(model.triangles.size());
 	m_Nodes[0].left = 0;
@@ -60,6 +67,12 @@ const RT::Triangle* RT::BVH::Intersect(const RT::Model& model, const RT::Ray& ra
 	return triangle;
 }
 
+bool RT::BVH::LightTraverse(const glm::vec3& lightpos, const RT::Model& model, const RT::Ray& ray) const
+{
+	float distanceToLight = glm::distance(lightpos , ray.origin);
+	return TraverseBVHEarlyOut(*model.modelData.get(), m_Nodes[0], ray, distanceToLight);
+}
+
 void RT::BVH::Serialize(RT::ModelData& model, const std::string& baseDir, const std::string& modelName)
 {
 	// Create File
@@ -71,13 +84,13 @@ void RT::BVH::Serialize(RT::ModelData& model, const std::string& baseDir, const 
 	fileHeader.NumberOfTriangles = model.triangles.size();
 	fileHeader.SizeOfTriangle = sizeof(RT::Triangle);
 	fileHeader.TotalSizeOFTriangles = fileHeader.NumberOfTriangles * fileHeader.SizeOfTriangle;
-	fileHeader.NumberOfNodes = m_Nodes.size();
+	fileHeader.NumberOfNodes = m_numOfNodes;
 	fileHeader.TotalSizeOfNodes = fileHeader.SizeOfNode * fileHeader.NumberOfNodes;
 
 	fwrite(&fileHeader, sizeof(fileHeader) , 1, file);
 	// Save body data
 	fwrite(model.triangles.data(), sizeof(RT::Triangle), fileHeader.NumberOfTriangles, file);
-	fwrite(m_Nodes.data(), sizeof(BVHNode), fileHeader.NumberOfNodes, file);
+	fwrite(m_Nodes, sizeof(BVHNode), fileHeader.NumberOfNodes, file);
 
 	fclose(file);
 	
@@ -110,12 +123,20 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	result = fread(readBody.Nodes, readHeader.SizeOfNode, readHeader.NumberOfNodes, file);
 	assert(result != 0);
 	memcpy(model.triangles.data(), readBody.Triangles, readHeader.TotalSizeOFTriangles);
-	m_Nodes.resize(readHeader.NumberOfNodes);
-	memcpy(m_Nodes.data(), readBody.Nodes, readHeader.TotalSizeOfNodes);
+	m_Nodes = (RT::BVHNode*)_aligned_malloc(readHeader.TotalSizeOfNodes, 32); 
+	
+	memcpy(m_Nodes, readBody.Nodes, readHeader.TotalSizeOfNodes);
 	fclose(file);
 	free((void*)readBody.Triangles);
 	free((void*)readBody.Nodes);
 	return true;
+}
+
+void RT::BVH::DrawBVH(const std::shared_ptr<Camera>& cam, const std::shared_ptr<Model>& model)
+{
+	//glBegin(GL_LINES);
+	//	DrawNode(m_Nodes[0],cam,model);
+	//glEnd();
 }
 
 
@@ -188,6 +209,98 @@ const RT::Triangle* RT::BVH::TraverseBVH(const RT::ModelData& model, const BVHNo
 		return leftShape;
 		
 	}
+}
+
+bool RT::BVH::TraverseBVHEarlyOut(const RT::ModelData& model, const BVHNode& currentNode, const RT::Ray& ray,
+	const float lightDistance) const
+{
+	// Exit if we miss the node
+	float temp{};
+	if (!currentNode.Intersect(ray, temp))
+	{
+		return false;
+	}
+	// Check if the current node is a leaf node
+	if (currentNode.count != 0)
+	{
+		const RT::Triangle* closestShape{ nullptr };
+		// Find closest object
+		for (uint32_t i = 0; i < currentNode.count; ++i)
+		{
+			int index = i + currentNode.left;
+			float distanceToTriange{ INFINITY };
+			if (model.triangles[index].Intersect(ray, distanceToTriange))
+			{
+				if (distanceToTriange < lightDistance);
+				{
+					return true;
+				}
+			}
+		}
+		return closestShape;
+	}
+	// If current node is a branch node
+	else
+	{
+		float DistanceLeftBox{};
+		float DistanceRightBox{};
+		bool leftShape{ false };
+		bool rightShape{ false };
+		bool hitLeft = m_Nodes[currentNode.left].Intersect(ray, DistanceLeftBox);
+		bool hitRight = m_Nodes[currentNode.left + 1].Intersect(ray, DistanceRightBox);
+
+		if (hitLeft && hitRight)
+		{
+			leftShape = TraverseBVHEarlyOut(model, m_Nodes[currentNode.left], ray, lightDistance);
+			rightShape = TraverseBVHEarlyOut(model, m_Nodes[currentNode.left + 1], ray, lightDistance);
+		}
+		else if (hitLeft)
+		{
+			leftShape = TraverseBVHEarlyOut(model, m_Nodes[currentNode.left], ray, lightDistance);
+		}
+		else if (hitRight)
+		{
+			rightShape = TraverseBVHEarlyOut(model, m_Nodes[currentNode.left + 1], ray, lightDistance);
+		}
+		if (leftShape == true || rightShape == true)
+		{
+			return true;
+		}
+		return false;
+	}
+}
+
+void RT::BVH::DrawNode(const BVHNode& node, const std::shared_ptr<Camera>& cam, const std::shared_ptr<Model>& model)
+{
+	//glm::vec3 LC = m_Nodes[0].Bounds[0];
+	//glm::vec3 RC = m_Nodes[0].Bounds[1];
+	////glm::vec3 pos = m_testScene->models[models]->modelData->triangles[triangles].GetVerts()[i];
+	//glm::mat4 VP = cam->GetProjection() * cam->GetView();
+	//glm::vec4 Mpos = model->transform.GetInverse() * glm::vec4{ LC,1.f };
+	//glm::vec4 Mpos2 = model->transform.GetInverse() * glm::vec4{ RC,1.f };
+	//LC = glm::normalize( VP * Mpos);
+	//RC = glm::normalize(VP * Mpos2);
+	//glVertex3f(LC.x, LC.y, LC.z);
+	//glVertex3f(RC.x, RC.y, RC.z);
+
+
+	
+	//glVertex3f(LC.x, LC.y, LC.z);
+	//glVertex3f(RC.x, LC.y, LC.z); // X 1
+
+	//glVertex3f(RC.x, LC.y, LC.z);
+	//glVertex3f(RC.x, RC.y, LC.z); // Y1
+
+	//glVertex3f(RC.x, RC.y, LC.z);
+	//glVertex3f(RC.x, RC.y, RC.z);
+	////glVertex3f(LC.x, RC.y, LC.z);
+	////glVertex3f(RC.x, RC.y, LC.z); // X 2
+
+	////glVertex3f(LC.x, LC.y, RC.z);
+	////glVertex3f(RC.x, LC.y, RC.z); // X 3
+
+	////glVertex3f(LC.x, RC.y, RC.z);
+	////glVertex3f(RC.x, RC.y, RC.z); // X 4
 }
 
 void RT::BVH::Subdivide(RT::BVHNode& currentNode, SubDivideInfo info)

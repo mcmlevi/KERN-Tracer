@@ -16,6 +16,13 @@
 #include <Graphics/ImGui/Layers/DockingLayer.h>
 #include <Graphics/ImGui/Layers/StatLayer.h>
 
+#include "Graphics/ImGui/Layers/OptionsLayer.h"
+
+#include <Core/Triangle.h>
+#include <Core/BVH/BVH.h>
+#include <glm/gtc/random.hpp>
+
+
 void RenderJob(const std::shared_ptr<RT::RayTracer>& tracer, const glm::vec2 pos, const glm::vec2 chunkSize, const glm::vec2 winsize, const std::shared_ptr<RT::Camera>& cam, glm::vec3* buf)
 {
     for (int y = 0; y < chunkSize.y; y++)
@@ -26,37 +33,66 @@ void RenderJob(const std::shared_ptr<RT::RayTracer>& tracer, const glm::vec2 pos
         }
     }
 }
-
 std::shared_ptr<RT::Model> cow1;
 void RT::Application::Initialize()
 {
 	JobSystem::Initialize();
 	
 	m_window = std::make_shared<Window>(800, 800, "Ray Tracer");
+	m_tracer = std::make_shared<RayTracer>(m_testScene);
 
 	m_imGuiInstance = std::make_unique<ImGuiInstance>(m_window);
     m_imGuiInstance->AddLayer(std::make_unique<DockingLayer>());
     m_imGuiInstance->AddLayer(std::make_unique<StatLayer>());
+
+    std::unique_ptr<OptionsLayer> optionsLayer = std::make_unique<OptionsLayer>();
+    optionsLayer->m_setOptionsDelegate.Connect(&RT::RayTracer::SetOptions, m_tracer.get());
+    m_imGuiInstance->AddLayer(std::move(optionsLayer));
 	
 	m_testScene = std::make_shared<RT::Scene>();
-	m_tracer = std::make_shared<RayTracer>(m_testScene);
 	m_resourceManager = std::make_shared<RT::ResourceManager>();
-	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {0,3.f,15.f }, { 0,0,0 } });
+	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {0,3.f,100.f }, { 0,0,0 } });
 
 	
 	m_testScene->activeCam = m_CurrentCamera;
 	std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
-	m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,10,8 }, { 1.f,1.f,1.f }, 50.f }));
-	cow1 = std::make_shared<RT::Model>();
-	cow1->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
-	cow1->material = *resourceManager->GetMaterial("Default");
-	m_testScene->models.push_back(cow1);
+	m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,10,0 }, { 1.f,1.f,1.f }, 200.f }));
+    m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,0,100 }, { 1.f,1.f,1.f }, 1000.f }));
 
-	std::shared_ptr<RT::Material> redMaterial{ resourceManager->GetMaterial("RedMaterial") };
-	redMaterial->baseColor = { 1.f,1.f,1.f };
-	cow1->material = *cow1->modelData->loadedInMaterial;
-	cow1->material.baseColor = { 1.f,1.f,1.f };
+	for (int i = 0; i < 1000.f; ++i)
+	{
+        auto model = std::make_shared<RT::Model>();
+        model->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
+        model->material = *model->modelData->loadedInMaterial;
+        model->material.baseColor = { 1.f,1.f,1.f };
+       
+		model->transform.SetPosition( glm::ballRand(50.f));
+        model->transform.SetRotation(glm::vec3{glm::linearRand(0,360),glm::linearRand(0,360) ,glm::linearRand(0,360) });
+        m_testScene->models.push_back(model);
+	}
 
+	
+ //   auto model2 = std::make_shared<RT::Model>();
+ //   model2->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
+ //   model2->material = *model2->modelData->loadedInMaterial;
+ //   model2->material.baseColor = { 1.f,1.f,1.f };
+ //   model2->transform.SetPosition({ 10, 0, 0 });
+ //   model2->transform.SetRotation({ 0,45,0 });
+	//m_testScene->models.push_back(model2);
+	
+	
+	m_tracer->ChangeSchene(m_testScene);
+ //   cow1 = std::make_shared<RT::Model>();
+ //   cow1->modelData = resourceManager->LoadModel("Assets/cube.obj");
+ //   cow1->material = *resourceManager->GetMaterial("Default");
+	//std::shared_ptr<RT::Material> redMaterial{ resourceManager->GetMaterial("RedMaterial") };
+	//redMaterial->baseColor = { 1.f,1.f,1.f };
+	//cow1->material = *cow1->modelData->loadedInMaterial;
+	//cow1->material.baseColor = { 1.f,1.f,1.f };
+ //   cow1->material.reflectiveIndex = 0.4f;
+ //   cow1->transform.Scale({ 2.f,2.f,2.f });
+ //   cow1->transform.SetPosition({ 0,0,0 });
+ //   m_testScene->models.push_back(cow1);
     Tick();
 }
 
@@ -93,12 +129,19 @@ void RT::Application::Tick()
 #pragma warning(pop)
         m_window->DrawPixelBuffer(m_window->GetSize(), GL_RGB, GL_FLOAT, (void*)m_window->GetScreenBuffer());
 
-		cow1->transform.Rotate(glm::vec3{ 0.f,1.f,0.f } *m_deltaTime * 0.001f);
 
 
         m_imGuiInstance->Update(m_deltaTime);
         m_imGuiInstance->Render();
-    
+
+      
+        for (int models = 0; models < m_testScene->models.size(); ++models)
+        {
+            m_testScene->models[models]->modelData->bvh->DrawBVH(m_CurrentCamera, m_testScene->models[models]);
+        }
+
+        //cow1->transform.Rotate({ 0.f, 0.001f * m_deltaTime, 0.f });
+    	
         m_window->Update();
         m_deltaTime = timer.GetElapsedTimeInMS();
     }

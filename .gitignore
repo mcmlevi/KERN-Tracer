@@ -349,3 +349,7 @@ healthchecksdb
 MigrationBackup/
 
 *.bvh
+
+KernTracer/KernTracer/Assets/Potato2/
+
+KernTracer/KernTracer/Assets/Potato3/

@@ -126,7 +126,16 @@
     <ClCompile Include="Src\Graphics\ImGui\Layers\DockingLayer.cpp">
       <Filter>Source Files\Graphics\ImGui\Layers</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Graphics\ImGui\Layers\OptionsLayer.cpp">
+      <Filter>Source Files\Graphics\ImGui\Layers</Filter>
+    </ClCompile>
     <ClCompile Include="Src\Graphics\ImGui\Layers\StatLayer.cpp">
+      <Filter>Source Files\Graphics\ImGui\Layers</Filter>
+    </ClCompile>
+    <ClCompile Include="Include\Core\RenderingOptions.h">
+      <Filter>Header Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\BVH\SceneBVH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -224,19 +233,25 @@
     <ClInclude Include="Include\Graphics\ImGui\Layers\IImGuiLayer.h">
       <Filter>Header Files\Graphics\ImGui\Layers</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Graphics\ImGui\ImGuiInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Graphics\ImGui\imgui_impl_opengl3.h">
       <Filter>Header Files\Graphics\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Include\Graphics\ImGui\imgui_impl_glfw.h">
       <Filter>Header Files\Graphics\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\Layers\OptionsLayer.h">
+      <Filter>Header Files\Graphics\ImGui\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Graphics\ImGui\ImGuiInstance.h">
+      <Filter>Header Files\Graphics\ImGui\Layers</Filter>
+    </ClInclude>
     <ClInclude Include="Include\Graphics\ImGui\Layers\DockingLayer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Graphics\ImGui\Layers</Filter>
     </ClInclude>
     <ClInclude Include="Include\Graphics\ImGui\Layers\StatLayer.h">
+      <Filter>Header Files\Graphics\ImGui\Layers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\BVH\SceneBVH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
