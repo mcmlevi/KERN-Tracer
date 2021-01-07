@@ -51,15 +51,15 @@ void RT::Application::Initialize()
 	
 	m_testScene = std::make_shared<RT::Scene>();
 	m_resourceManager = std::make_shared<RT::ResourceManager>();
-	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {0,3.f,100.f }, { 0,0,0 } });
+	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {100.f,3.f,0.f }, { 0,0,0 } });
 
 	
 	m_testScene->activeCam = m_CurrentCamera;
 	std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
 	m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,10,0 }, { 1.f,1.f,1.f }, 200.f }));
-    m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,0,100 }, { 1.f,1.f,1.f }, 1000.f }));
+    m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 100,0,0 }, { 1.f,1.f,1.f }, 1000.f }));
 
-	for (int i = 0; i < 1000.f; ++i)
+	for (int i = 0; i < 100; ++i)
 	{
         auto model = std::make_shared<RT::Model>();
         model->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
@@ -100,6 +100,7 @@ void RT::Application::Tick()
 {
     while (!m_window->ShouldClose())
     {
+        m_testScene->sceneBvh->BuildBVH(m_testScene->models);
         RT::Timer timer{};
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         const glm::vec2 winSize = m_window->GetSize();
@@ -143,6 +144,7 @@ void RT::Application::Tick()
         //cow1->transform.Rotate({ 0.f, 0.001f * m_deltaTime, 0.f });
     	
         m_window->Update();
+       
         m_deltaTime = timer.GetElapsedTimeInMS();
     }
 }
