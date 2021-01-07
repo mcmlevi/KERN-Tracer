@@ -25,33 +25,45 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 	HitInfo hitInfo;
 	hitInfo.Distance = INFINITY;
 	hitInfo.Hit = false;
-	for (size_t i = 0; i < m_activeScene->models.size(); ++i)
+	hitInfo.HitTriangle =  m_activeScene->sceneBvh->Intersect(m_activeScene->models, ray, hitInfo.Distance);
+	if(hitInfo.HitTriangle)
 	{
-		float currentModelDistance{ INFINITY };
-		const auto& modelref = m_activeScene->models[i];
-		glm::vec3 trd = glm::normalize(modelref->transform.GetInverse() * glm::vec4{ ray.direction,0.f });
-		glm::vec3 tro =  modelref->transform.GetInverse() * glm::vec4{ ray.origin,1.f };
-		Ray transformedRay{ tro,trd };
-		const RT::Triangle* currentModelTriangle{ m_activeScene->models[i]->modelData->bvh->Intersect(*m_activeScene->models[i], transformedRay,currentModelDistance) };
-		if (currentModelTriangle)
-		{
-			glm::vec4 localHit = glm::vec4{ trd * currentModelDistance + tro ,1.f };
-			
-			glm::vec3 worldIntersect = modelref->transform.GetTransform() * localHit;
-			
-			currentModelDistance = glm::length(ray.origin - worldIntersect);
-			if(currentModelDistance < hitInfo.Distance)
-			{
-				hitInfo.Hit = true;
-				hitInfo.LocalIntersect = localHit;
-				hitInfo.WorldIntersect = worldIntersect;
-				hitInfo.Distance = currentModelDistance;
-				hitInfo.HitTriangle = currentModelTriangle;
-				hitInfo.Material = &m_activeScene->models[i]->material;
-				hitInfo.HitModel = m_activeScene->models[i];
-			}
-		}
+		hitInfo.Hit = true;
+		//hitInfo.LocalIntersect = localHit;
+		//hitInfo.WorldIntersect = worldIntersect;
+		//hitInfo.Distance = currentModelDistance;
+		//hitInfo.HitTriangle = currentModelTriangle;
+		//hitInfo.Material = &m_activeScene->models[i]->material;
+		//hitInfo.HitModel = m_activeScene->models[i];
 	}
+	
+	//for (size_t i = 0; i < m_activeScene->models.size(); ++i)
+	//{
+	//	float currentModelDistance{ INFINITY };
+	//	const auto& modelref = m_activeScene->models[i];
+	//	glm::vec3 trd = glm::normalize(modelref->transform.GetInverse() * glm::vec4{ ray.direction,0.f });
+	//	glm::vec3 tro =  modelref->transform.GetInverse() * glm::vec4{ ray.origin,1.f };
+	//	Ray transformedRay{ tro,trd };
+	//	const RT::Triangle* currentModelTriangle{ m_activeScene->models[i]->modelData->bvh->Intersect(*m_activeScene->models[i], transformedRay,currentModelDistance) };
+	//	if (currentModelTriangle)
+	//	{
+	//		glm::vec4 localHit = glm::vec4{ trd * currentModelDistance + tro ,1.f };
+	//		
+	//		glm::vec3 worldIntersect = modelref->transform.GetTransform() * localHit;
+	//		
+	//		currentModelDistance = glm::length(ray.origin - worldIntersect);
+	//		if(currentModelDistance < hitInfo.Distance)
+	//		{
+	//			hitInfo.Hit = true;
+	//			hitInfo.LocalIntersect = localHit;
+	//			hitInfo.WorldIntersect = worldIntersect;
+	//			hitInfo.Distance = currentModelDistance;
+	//			hitInfo.HitTriangle = currentModelTriangle;
+	//			hitInfo.Material = &m_activeScene->models[i]->material;
+	//			hitInfo.HitModel = m_activeScene->models[i];
+	//		}
+	//	}
+	//}
 	
 	if(hitInfo.Hit)
 	{
@@ -64,14 +76,14 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 		{
 			return (glm::vec3{0.f,0.f,1.f} / sqrtf(hitInfo.Distance));
 		}
-		//return { 1.f,0.f,0.f };
-		glm::vec3 reflectionResult(Reflect(hitInfo, ray, currentDepth));
+		return { 1.f,0.f,0.f };
+		//glm::vec3 reflectionResult(Reflect(hitInfo, ray, currentDepth));
 
-		glm::vec3 texColor{ hitInfo.Material->GetTexture(hitInfo.LocalIntersect,*hitInfo.HitTriangle) };
-		//texColor  (hitInfo.Material->baseColor * reflectionResult);
-		glm::vec3 shadingResult{ ApplyShading(hitInfo, ray,texColor) * (1.f-hitInfo.Material->reflectiveIndex) };
+		//glm::vec3 texColor{ hitInfo.Material->GetTexture(hitInfo.LocalIntersect,*hitInfo.HitTriangle) };
+		////texColor  (hitInfo.Material->baseColor * reflectionResult);
+		//glm::vec3 shadingResult{ ApplyShading(hitInfo, ray,texColor) * (1.f-hitInfo.Material->reflectiveIndex) };
 
-		return shadingResult + reflectionResult;
+		//return shadingResult + reflectionResult;
 			
 	}
 	return { 0.f,1.f,0.f };

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <Core/BVH/SceneBVH.h>
 namespace RT
 {
 	struct Model;
@@ -13,6 +14,7 @@ namespace RT
 		std::vector<std::shared_ptr<PointLight>> pointLights;
 		std::vector<std::shared_ptr<Camera>> cameras;
 		std::shared_ptr<Camera> activeCam;
+		std::unique_ptr<RT::SceneBVH> sceneBvh = std::make_unique<RT::SceneBVH>();
 	};
 
 }
