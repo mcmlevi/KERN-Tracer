@@ -8,13 +8,15 @@ std::array<glm::vec3,2> TransformBounds(const std::array<glm::vec3, 2>& bounds, 
 {
 	glm::vec3 corners[8];
 	corners[0] = { bounds[0].x,bounds[0].y,bounds[0].z };
-	corners[1] = { bounds[0].x,bounds[0].y,bounds[0].z };
-	corners[2] = { bounds[0].x,bounds[1].y,bounds[1].z };
+	corners[1] = { bounds[0].x,bounds[0].y,bounds[1].z };
+	
+	corners[2] = { bounds[0].x,bounds[1].y,bounds[0].z };
 	corners[3] = { bounds[0].x,bounds[1].y,bounds[1].z };
 
 	corners[4] = { bounds[1].x,bounds[0].y,bounds[0].z };
-	corners[5] = { bounds[1].x,bounds[0].y,bounds[0].z };
-	corners[6] = { bounds[1].x,bounds[1].y,bounds[1].z };
+	corners[5] = { bounds[1].x,bounds[0].y,bounds[1].z };
+
+	corners[6] = { bounds[1].x,bounds[1].y,bounds[0].z };
 	corners[7] = { bounds[1].x,bounds[1].y,bounds[1].z };
 	std::array<glm::vec3, 2> out{ glm::vec3{INFINITY,INFINITY,INFINITY},glm::vec3{-INFINITY,-INFINITY,-INFINITY} };
 
@@ -62,13 +64,13 @@ void RT::SceneBVH::BuildBVH(std::vector<std::shared_ptr<Model>>& models)
 	printf("%f \n", timer.GetElapsedTimeInMS());
 }
 
-const RT::Triangle* RT::SceneBVH::Intersect(std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray, float& t) const
+RT::ReturnInfo RT::SceneBVH::Intersect(std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray, float& t) const
 {
 	assert(m_numOfNodes != 0);
 	float boxDistance{ INFINITY };
 
-	RT::SceneBVH::ReturnInfo triangle = TraverseBVH(models, m_nodes[0], ray, boxDistance, t);
-	return triangle.triangle;
+	RT::ReturnInfo triangle = TraverseBVH(models, m_nodes[0], ray, boxDistance, t);
+	return triangle;
 }
 
 bool RT::SceneBVH::LightTraverse(const glm::vec3& lightpos, std::vector<std::shared_ptr<Model>>& models,
@@ -192,19 +194,20 @@ RT::SceneBVH::PartionInfo RT::SceneBVH::Partion(std::array<glm::vec3, 2>& Bounds
 	return info;
 }
 
-RT::SceneBVH::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
+RT::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
                                                    const RT::Ray& ray, float& boxDistance, float& objectDistance) const
 {
 	// Exit if we miss the node
 	float temp{};
 	if (!currentNode.Intersect(ray, temp))
 	{
-		return {nullptr,0};
+		return { nullptr,0};
 	}
 	// Check if the current node is a leaf node
 	if (currentNode.count != 0)
 	{
 		const RT::Triangle* closestShape{ nullptr };
+		std::shared_ptr<Model> model;
 		// Find closest object
 		for (uint32_t i = 0; i < currentNode.count; ++i)
 		{
@@ -213,6 +216,7 @@ RT::SceneBVH::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<M
 			glm::vec3 trd = glm::normalize(models[index]->transform.GetInverse() * glm::vec4{ ray.direction,0.f });
 			glm::vec3 tro = models[index]->transform.GetInverse() * glm::vec4{ ray.origin,1.f };
 			Ray transformedRay{ tro,trd };
+			
 			const RT::Triangle* hit = models[index]->modelData->bvh->Intersect(*models[index], transformedRay, distanceToTriange);
 			if (hit)
 			{
@@ -223,22 +227,23 @@ RT::SceneBVH::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<M
 				{
 					objectDistance = distanceToTriange;
 					closestShape = hit;
+					model = models[index];
 				}
 			}
 		}
-		return {closestShape,objectDistance};
+		return {closestShape,objectDistance,model};
 	}
 	// If current node is a branch node
 	else
 	{
 		float DistanceLeftBox{};
 		float DistanceRightBox{};
-		RT::SceneBVH::ReturnInfo leftShape{ nullptr };
-		RT::SceneBVH::ReturnInfo rightShape{ nullptr };
+		RT::ReturnInfo leftShape{ nullptr};
+		RT::ReturnInfo rightShape{ nullptr};
 		bool hitLeft = m_nodes[currentNode.left].Intersect(ray, DistanceLeftBox);
 		bool hitRight = m_nodes[currentNode.left + 1].Intersect(ray, DistanceRightBox);
 
-		if (hitLeft && hitRight)
+		if (hitLeft || hitRight)
 		{
 			leftShape = TraverseBVH(models, m_nodes[currentNode.left], ray, boxDistance, objectDistance);
 			rightShape = TraverseBVH(models, m_nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
@@ -251,6 +256,8 @@ RT::SceneBVH::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<M
 		{
 			rightShape = TraverseBVH(models, m_nodes[currentNode.left + 1], ray, boxDistance, objectDistance);
 		}
+
+
 		if (leftShape.triangle == nullptr && rightShape.triangle != nullptr)
 		{
 			return rightShape;
@@ -261,7 +268,7 @@ RT::SceneBVH::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<M
 			if (rightShape.distance < leftShape.distance)
 				return rightShape;
 			else
-				return rightShape;
+				return leftShape;
 		}
 		return leftShape;
 
