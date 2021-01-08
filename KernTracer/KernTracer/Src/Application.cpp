@@ -51,57 +51,64 @@ void RT::Application::Initialize()
 	
 	m_testScene = std::make_shared<RT::Scene>();
 	m_resourceManager = std::make_shared<RT::ResourceManager>();
-	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {100.f,3.f,0.f }, { 0,0,0 } });
+	m_CurrentCamera = std::make_shared<RT::Camera>(RT::Camera{ 70, m_window->GetSize(), {0.f,3.f,15.f }, { 0,0,0 } });
 
 	
 	m_testScene->activeCam = m_CurrentCamera;
 	std::shared_ptr<RT::ResourceManager> resourceManager{ std::make_shared<RT::ResourceManager>() };
-	m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,10,0 }, { 1.f,1.f,1.f }, 200.f }));
-    m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 100,0,0 }, { 1.f,1.f,1.f }, 1000.f }));
+	m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,100,0 }, { 1.f,1.f,1.f }, 1000.f }));
+    m_testScene->pointLights.push_back(std::make_shared<RT::PointLight>(RT::PointLight{ { 0,0,15 }, { 1.f,1.f,1.f }, 100.f }));
 
-	for (int i = 0; i < 100; ++i)
-	{
-        auto model = std::make_shared<RT::Model>();
-        model->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
-        model->material = *model->modelData->loadedInMaterial;
-        model->material.baseColor = { 1.f,1.f,1.f };
-       
-		model->transform.SetPosition( glm::ballRand(50.f));
-        model->transform.SetRotation(glm::vec3{glm::linearRand(0,360),glm::linearRand(0,360) ,glm::linearRand(0,360) });
-        m_testScene->models.push_back(model);
-	}
+	//for (int i = 0; i < 15; ++i)
+	//{
+ //       auto model = std::make_shared<RT::Model>();
+ //       //model->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
+ //      model->modelData = resourceManager->LoadModel("Assets/ferari.obj");
+ //       model->material = *model->modelData->loadedInMaterial;
+ //       model->material.baseColor = { 1.f,1.f,1.f };
+ //       model->material.reflectiveIndex = 0.5;
+ //       model->material.refractiveIndex = 0.5;
+	//	model->transform.SetPosition( glm::ballRand(50.f));
+ //       model->transform.SetRotation(glm::vec3{glm::linearRand(0,360),glm::linearRand(0,360) ,glm::linearRand(0,360) });
+ //       m_testScene->models.push_back(model);
+	//}
 
 	
- //   auto model2 = std::make_shared<RT::Model>();
- //   model2->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
- //   model2->material = *model2->modelData->loadedInMaterial;
- //   model2->material.baseColor = { 1.f,1.f,1.f };
- //   model2->transform.SetPosition({ 10, 0, 0 });
- //   model2->transform.SetRotation({ 0,45,0 });
-	//m_testScene->models.push_back(model2);
+    auto model2 = std::make_shared<RT::Model>();
+    model2->modelData = resourceManager->LoadModel("Assets/Potato/potato.obj");
+    model2->material = *model2->modelData->loadedInMaterial;
+    model2->material.baseColor = { 1.f,1.f,1.f };
+    model2->material.refractiveIndex = 1.5f;
+    model2->transform.SetPosition({ 0, 0, -15.f });
+    model2->transform.SetScale({ 3, 3, 3.f });
+    model2->transform.SetRotation({ 0,45,0 });
+	m_testScene->models.push_back(model2);
 	
 	
 	m_tracer->ChangeSchene(m_testScene);
- //   cow1 = std::make_shared<RT::Model>();
- //   cow1->modelData = resourceManager->LoadModel("Assets/cube.obj");
- //   cow1->material = *resourceManager->GetMaterial("Default");
+    cow1 = std::make_shared<RT::Model>();
+    cow1->modelData = resourceManager->LoadModel("Assets/highresSphere.obj");
+    cow1->material = *resourceManager->GetMaterial("Default");
 	//std::shared_ptr<RT::Material> redMaterial{ resourceManager->GetMaterial("RedMaterial") };
 	//redMaterial->baseColor = { 1.f,1.f,1.f };
 	//cow1->material = *cow1->modelData->loadedInMaterial;
-	//cow1->material.baseColor = { 1.f,1.f,1.f };
- //   cow1->material.reflectiveIndex = 0.4f;
- //   cow1->transform.Scale({ 2.f,2.f,2.f });
- //   cow1->transform.SetPosition({ 0,0,0 });
- //   m_testScene->models.push_back(cow1);
-    Tick();
+	cow1->material.baseColor = { 0.f,0.f,1.f };
+    //cow1->material.reflectiveIndex = 0.4f;
+    cow1->material.refractiveIndex = 1.25f;
+    //cow1->transform.Scale({ 2.0f,2.0f,2.0f });
+    cow1->transform.Scale({ 0.25f,0.25f,0.25f });
+    cow1->transform.SetPosition({ 0,0,0 });
+    m_testScene->models.push_back(cow1);
+    m_testScene->sceneBvh->BuildBVH(m_testScene->models);
+	Tick();
 }
 
 void RT::Application::Tick()
 {
     while (!m_window->ShouldClose())
     {
-        m_testScene->sceneBvh->BuildBVH(m_testScene->models);
         RT::Timer timer{};
+		m_testScene->sceneBvh->BuildBVH(m_testScene->models);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         const glm::vec2 winSize = m_window->GetSize();
         for (unsigned y = 0; y < m_window->GetSize().y; y += m_chunkSize)
@@ -141,7 +148,7 @@ void RT::Application::Tick()
             m_testScene->models[models]->modelData->bvh->DrawBVH(m_CurrentCamera, m_testScene->models[models]);
         }
 
-        //cow1->transform.Rotate({ 0.f, 0.001f * m_deltaTime, 0.f });
+        cow1->transform.Rotate({ 0.f, 0.001f * m_deltaTime, 0.f });
     	
         m_window->Update();
        

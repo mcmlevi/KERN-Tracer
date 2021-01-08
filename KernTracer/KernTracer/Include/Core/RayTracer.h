@@ -26,10 +26,14 @@ namespace RT
 			const RT::Material* Material;
 			glm::vec3 WorldIntersect;
 			glm::vec3 LocalIntersect;
+			glm::vec3 TransformedNormal;
 		};
 		
 		glm::vec3 ApplyShading(const HitInfo& hitInfo, const Ray& rayOrigin, const glm::vec3& color) const;
 		glm::vec3 Reflect(const HitInfo& hitInfo, const Ray& ray, const int depth) const;
+		float Calculatefresnel(const RT::Ray& ray, const glm::vec3& normal, float refractionIndex) const;
+		glm::vec3 calculateRefraction(const Ray& ray, const HitInfo& info, float& fresnel, int depth) const ;
+		glm::vec3 refract(const Ray& ray, const HitInfo& info) const;
 		int m_maxDepth{ 3 };
 		std::shared_ptr<Scene> m_activeScene{nullptr};
 		int32_t m_options{0};

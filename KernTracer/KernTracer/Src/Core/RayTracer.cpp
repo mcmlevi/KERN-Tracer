@@ -25,70 +25,122 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 	HitInfo hitInfo;
 	hitInfo.Distance = INFINITY;
 	hitInfo.Hit = false;
-	hitInfo.HitTriangle =  m_activeScene->sceneBvh->Intersect(m_activeScene->models, ray, hitInfo.Distance);
+	RT::ReturnInfo returnInfo = m_activeScene->sceneBvh->Intersect(m_activeScene->models, ray, hitInfo.Distance);
+	hitInfo.HitTriangle = returnInfo.triangle;
 	if(hitInfo.HitTriangle)
 	{
 		hitInfo.Hit = true;
-		//hitInfo.LocalIntersect = localHit;
-		//hitInfo.WorldIntersect = worldIntersect;
-		//hitInfo.Distance = currentModelDistance;
-		//hitInfo.HitTriangle = currentModelTriangle;
-		//hitInfo.Material = &m_activeScene->models[i]->material;
-		//hitInfo.HitModel = m_activeScene->models[i];
+		glm::vec3 hitPoint = returnInfo.distance * ray.direction + ray.origin;
+		hitInfo.LocalIntersect = returnInfo.model->transform.GetInverse() * glm::vec4{ hitPoint ,1.f};
+		hitInfo.WorldIntersect = hitPoint;
+		hitInfo.Distance = returnInfo.distance;
+		hitInfo.HitTriangle = returnInfo.triangle;
+		hitInfo.Material = &returnInfo.model->material;
+		hitInfo.HitModel = returnInfo.model;
+
+		glm::vec3 normal{ hitInfo.HitTriangle->GetNormal() };
+		hitInfo.TransformedNormal = glm::normalize(hitInfo.HitModel->transform.GetTransform() * glm::vec4{ normal ,0.f });
+		
 	}
 	
-	//for (size_t i = 0; i < m_activeScene->models.size(); ++i)
-	//{
-	//	float currentModelDistance{ INFINITY };
-	//	const auto& modelref = m_activeScene->models[i];
-	//	glm::vec3 trd = glm::normalize(modelref->transform.GetInverse() * glm::vec4{ ray.direction,0.f });
-	//	glm::vec3 tro =  modelref->transform.GetInverse() * glm::vec4{ ray.origin,1.f };
-	//	Ray transformedRay{ tro,trd };
-	//	const RT::Triangle* currentModelTriangle{ m_activeScene->models[i]->modelData->bvh->Intersect(*m_activeScene->models[i], transformedRay,currentModelDistance) };
-	//	if (currentModelTriangle)
-	//	{
-	//		glm::vec4 localHit = glm::vec4{ trd * currentModelDistance + tro ,1.f };
-	//		
-	//		glm::vec3 worldIntersect = modelref->transform.GetTransform() * localHit;
-	//		
-	//		currentModelDistance = glm::length(ray.origin - worldIntersect);
-	//		if(currentModelDistance < hitInfo.Distance)
-	//		{
-	//			hitInfo.Hit = true;
-	//			hitInfo.LocalIntersect = localHit;
-	//			hitInfo.WorldIntersect = worldIntersect;
-	//			hitInfo.Distance = currentModelDistance;
-	//			hitInfo.HitTriangle = currentModelTriangle;
-	//			hitInfo.Material = &m_activeScene->models[i]->material;
-	//			hitInfo.HitModel = m_activeScene->models[i];
-	//		}
-	//	}
-	//}
 	
 	if(hitInfo.Hit)
 	{
 		if(m_options & RenderingOptions::NORMAL)
 		{
-			glm::vec3 normal{ hitInfo.HitTriangle->GetNormal() };
-			return glm::normalize(hitInfo.HitModel->transform.GetTransform() * glm::vec4{ normal ,0.f });
+			return hitInfo.TransformedNormal;
 		}
 		else if(m_options & RenderingOptions::DEPTH)
 		{
 			return (glm::vec3{0.f,0.f,1.f} / sqrtf(hitInfo.Distance));
 		}
-		return { 1.f,0.f,0.f };
-		//glm::vec3 reflectionResult(Reflect(hitInfo, ray, currentDepth));
+		//return { 1.f,0.f,0.f };
 
-		//glm::vec3 texColor{ hitInfo.Material->GetTexture(hitInfo.LocalIntersect,*hitInfo.HitTriangle) };
-		////texColor  (hitInfo.Material->baseColor * reflectionResult);
-		//glm::vec3 shadingResult{ ApplyShading(hitInfo, ray,texColor) * (1.f-hitInfo.Material->reflectiveIndex) };
+		glm::vec3 texColor{ hitInfo.Material->GetTexture(hitInfo.LocalIntersect,*hitInfo.HitTriangle) };
 
-		//return shadingResult + reflectionResult;
+		float fresnel{ 0.f };
+		glm::vec3 reflectionResult(calculateRefraction(ray,hitInfo, fresnel, currentDepth));
+
+		//texColor  (hitInfo.Material->baseColor * reflectionResult);
+		if (hitInfo.Material->refractiveIndex == 0.f)
+		{
+			glm::vec3 shadingResult{ ApplyShading(hitInfo, ray,texColor) };
+			return shadingResult + reflectionResult;
+		}
+		return reflectionResult;
+		
 			
 	}
 	return { 0.f,1.f,0.f };
 }
 
+float RT::RayTracer::Calculatefresnel(const RT::Ray& ray, const glm::vec3& normal, float refractionIndex) const
+{
+	float cosi = glm::clamp(-1.f, 1.f, glm::dot(ray.direction,normal));
+	float etai = 1.f, etat = refractionIndex;
+	if (cosi > 0) { std::swap(etai, etat); }
+	// Compute sini using Snell's law
+	float sint = etai / etat * sqrtf(std::max(0.f, 1.f - cosi * cosi));
+	// Total internal reflection
+	if (sint >= 1.f) {
+		return 1.f;
+	}
+	else {
+		float cost = sqrtf(std::max(0.f, 1.f - sint * sint));
+		cosi = fabsf(cosi);
+		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+		float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+		return  (Rs * Rs + Rp * Rp) * 0.5f;
+	}
+}
+
+glm::vec3 RT::RayTracer::calculateRefraction(const Ray& ray, const HitInfo& info,float& fresnel, int depth) const
+{
+
+	glm::vec3 RefractionColor{};
+	glm::vec3 ReflectionColor{};
+	if (info.Material->refractiveIndex > 0.f)
+	{
+		fresnel = Calculatefresnel(ray, info.TransformedNormal, info.Material->refractiveIndex);
+		bool outside{ glm::dot(ray.direction,info.TransformedNormal) < 0 };
+		if (fresnel < 1.f)
+		{
+			// get the transmission Ray
+			 glm::vec3 TransmissionRay{refract(ray,info) };
+			//glm::vec3 TransmissionRay{glm::refract(ray.direction,info.TransformedNormal,info.Material->refractiveIndex) };
+				TransmissionRay = glm::normalize(TransmissionRay);
+
+
+				// Make the actual refraction Ray
+				Ray refractionRay{  outside ? info.WorldIntersect - info.TransformedNormal * 1e-4f : info.WorldIntersect + info.TransformedNormal * 1e-4f,TransmissionRay };
+
+				RefractionColor = Trace(refractionRay, depth + 1);
+		
+		}
+		glm::vec3 reflectionDirection = glm::normalize(glm::reflect(ray.direction, info.TransformedNormal));
+		glm::vec3 reflectionRayOrig{ outside ? info.WorldIntersect - info.TransformedNormal * 1e-4f : info.WorldIntersect + info.TransformedNormal * 1e-4f };
+		ReflectionColor = Trace(Ray{ reflectionRayOrig,reflectionDirection }, depth + 1);
+
+		return ReflectionColor * fresnel + RefractionColor * (1.f - fresnel);
+	}
+	return  { 0.f,0.f,0.f };
+}
+
+glm::vec3 RT::RayTracer::refract(const Ray& ray, const HitInfo& info) const
+{
+	float cosi = glm::clamp(-1.f, 1.f, glm::dot(ray.direction,info.TransformedNormal));
+	float etai = 1.f, etat = info.Material->refractiveIndex;
+	glm::vec3 n = info.TransformedNormal;
+	if (cosi < 0) { cosi = -cosi; }
+	else
+	{
+		std::swap(etai, etat);
+		n = -1.f * n;
+	}
+	float eta = etai / etat;
+	float k = 1.f - eta * eta * (1.f - cosi * cosi);
+	return k < 0.f ? glm::vec3{} : eta * ray.direction + (eta * cosi - sqrtf(k)) * n;
+}
 
 void RT::RayTracer::SetOptions(int32_t options)
 {
@@ -106,8 +158,7 @@ glm::vec3 RT::RayTracer::ApplyShading(const HitInfo& hitInfo, const Ray& ray, co
 		{
 
 			bool lightVisable = true;
-			glm::vec3 normal{ hitInfo.HitTriangle->GetNormal() };
-			normal = glm::normalize(hitInfo.HitModel->transform.GetTransform() * glm::vec4{ normal ,0.f });
+			glm::vec3 normal{ hitInfo.TransformedNormal };
 			for (size_t i = 0; i < m_activeScene->models.size(); ++i)
 			{
 				const auto& modelref = m_activeScene->models[i];
@@ -146,7 +197,7 @@ glm::vec3 RT::RayTracer::Reflect(const HitInfo& hitInfo, const Ray& ray, const i
 {
 	if(hitInfo.Material->reflectiveIndex > 0.f)
 	{
-		glm::vec3 normal{ glm::normalize(hitInfo.HitModel->transform.GetTransform() * glm::vec4{ hitInfo.HitTriangle->GetNormal() ,0.f}) };
+		glm::vec3 normal{ hitInfo.TransformedNormal };
 		glm::vec3 reflectDir = glm::reflect(ray.direction, normal);
 		Ray reflectiveRay{ hitInfo.WorldIntersect + normal * 1e-4f,reflectDir };
 		return Trace(reflectiveRay, depth + 1) * hitInfo.Material->reflectiveIndex;
