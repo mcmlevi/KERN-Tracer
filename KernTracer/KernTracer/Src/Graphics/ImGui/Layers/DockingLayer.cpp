@@ -3,7 +3,7 @@
 
 #include "Graphics/ImGui/imgui.h"
 
-void RT::DockingLayer::Update(float dt)
+void RT::DockingLayer::Update(float dt, std::shared_ptr<RT::Scene> currentScene)
 {
 	bool p_open{ true };
 	ImGuiViewport* viewport = ImGui::GetMainViewport();

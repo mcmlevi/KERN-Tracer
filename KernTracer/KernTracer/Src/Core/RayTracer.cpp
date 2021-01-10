@@ -8,6 +8,9 @@
 #include <Core/Scene.h>
 #include <Core/Material.h>
 #include <Core/RenderingOptions.h>
+
+#include "Core/Timer.h"
+
 RT::RayTracer::RayTracer(std::shared_ptr<Scene> sceneToRender)
 {
 	m_activeScene = sceneToRender;
@@ -17,11 +20,18 @@ void RT::RayTracer::ChangeSchene(std::shared_ptr<Scene> newSceneToRender)
 {
 	m_activeScene = newSceneToRender;
 }
+thread_local RT::Timer pixelTimer;
+
 glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 {
+	if(m_options.Mode & RT::RenderingOptions::PIXELCOST && currentDepth == 0)
+	{
+		pixelTimer.ResetTimer();
+	}
+
 	if (currentDepth >= m_maxDepth)
 		return {};
-
+	
 	HitInfo hitInfo;
 	hitInfo.Distance = INFINITY;
 	hitInfo.Hit = false;
@@ -46,11 +56,11 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 	
 	if(hitInfo.Hit)
 	{
-		if(m_options & RenderingOptions::NORMAL)
+		if(m_options.Mode & RenderingOptions::NORMAL)
 		{
 			return hitInfo.TransformedNormal;
 		}
-		else if(m_options & RenderingOptions::DEPTH)
+		else if(m_options.Mode & RenderingOptions::DEPTH)
 		{
 			return (glm::vec3{0.f,0.f,1.f} / sqrtf(hitInfo.Distance));
 		}
@@ -65,13 +75,24 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 		if (hitInfo.Material->refractiveIndex == 0.f)
 		{
 			glm::vec3 shadingResult{ ApplyShading(hitInfo, ray,texColor) };
+			if (currentDepth == 0 && m_options.Mode & RT::RenderingOptions::PIXELCOST)
+				return CalculatePixelCost();
 			return shadingResult + reflectionResult;
 		}
+		if (currentDepth == 0 && m_options.Mode & RT::RenderingOptions::PIXELCOST)
+			return CalculatePixelCost();
 		return reflectionResult;
 		
 			
 	}
+	if (currentDepth == 0 && m_options.Mode & RT::RenderingOptions::PIXELCOST)
+		return CalculatePixelCost();
 	return { 0.f,1.f,0.f };
+}
+
+void RT::RayTracer::SetOptions(RenderingOptions::OptionsData options)
+{
+	m_options = options;
 }
 
 float RT::RayTracer::Calculatefresnel(const RT::Ray& ray, const glm::vec3& normal, float refractionIndex) const
@@ -141,11 +162,30 @@ glm::vec3 RT::RayTracer::refract(const Ray& ray, const HitInfo& info) const
 	float k = 1.f - eta * eta * (1.f - cosi * cosi);
 	return k < 0.f ? glm::vec3{} : eta * ray.direction + (eta * cosi - sqrtf(k)) * n;
 }
-
-void RT::RayTracer::SetOptions(int32_t options)
+int interpolate(int color1, int color2, float fraction)
 {
-	m_options = options;
+	unsigned char   r1 = (color1 >> 16) & 0xff;
+	unsigned char   r2 = (color2 >> 16) & 0xff;
+	unsigned char   g1 = (color1 >> 8) & 0xff;
+	unsigned char   g2 = (color2 >> 8) & 0xff;
+	unsigned char   b1 = color1 & 0xff;
+	unsigned char   b2 = color2 & 0xff;
+
+	return (int)((r2 - r1) * fraction + r1) << 16 |
+		(int)((g2 - g1) * fraction + g1) << 8 |
+		(int)((b2 - b1) * fraction + b1);
 }
+
+glm::vec3 RT::RayTracer::CalculatePixelCost() const
+{
+	float time = pixelTimer.GetElapsedTimeInMS();
+	int result = interpolate(0x00FF00,0xFF0000,time * m_options.PixelCostSensitivity);
+	unsigned char   r = (result >> 16) & 0xff;
+	unsigned char   g = (result >> 8) & 0xff;
+	unsigned char   b = result & 0xff;
+	return { r / 255.f,g / 255.f,b / 255.f };
+}
+
 
 glm::vec3 RT::RayTracer::ApplyShading(const HitInfo& hitInfo, const Ray& ray, const glm::vec3& color) const
 {
@@ -159,20 +199,7 @@ glm::vec3 RT::RayTracer::ApplyShading(const HitInfo& hitInfo, const Ray& ray, co
 
 			bool lightVisable = true;
 			glm::vec3 normal{ hitInfo.TransformedNormal };
-			for (size_t i = 0; i < m_activeScene->models.size(); ++i)
-			{
-				const auto& modelref = m_activeScene->models[i];
-				glm::vec3 toLight{ glm::normalize(light.Position - hitInfo.WorldIntersect) };
-				glm::vec3 trd = glm::normalize(modelref->transform.GetInverse() * glm::vec4{ toLight,0.f });
-				glm::vec3 tro = modelref->transform.GetInverse() * glm::vec4{ hitInfo.WorldIntersect + normal * 1e-4f,1.f };
-				Ray transformedRay{ tro,trd };
-				bool hit{ m_activeScene->models[i]->modelData->bvh->LightTraverse(light.Position,*m_activeScene->models[i], transformedRay) };
-				if (hit)
-				{
-					lightVisable = false;
-					break;
-				}
-			}
+			lightVisable = m_activeScene->sceneBvh->LightTraverse(light.Position, m_activeScene->models, ray);
 			if(lightVisable)
 			{
 				glm::vec3 lightDirection = light.Position - hitInfo.WorldIntersect;

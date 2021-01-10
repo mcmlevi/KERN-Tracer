@@ -4,6 +4,8 @@
 #include <Core/BVH/SceneBVH.h>
 
 #include "Core/Timer.h"
+#include <Graphics/OpenGL/glad.h>
+
 std::array<glm::vec3,2> TransformBounds(const std::array<glm::vec3, 2>& bounds, const glm::mat4& transform)
 {
 	glm::vec3 corners[8];
@@ -76,6 +78,20 @@ RT::ReturnInfo RT::SceneBVH::Intersect(std::vector<std::shared_ptr<Model>>& mode
 bool RT::SceneBVH::LightTraverse(const glm::vec3& lightpos, std::vector<std::shared_ptr<Model>>& models,
 	const RT::Ray& ray) const
 {
+	assert(m_numOfNodes != 0);
+	return TraverseWithEarlyOut(models, m_nodes[0], ray, lightpos);
+}
+
+void RT::SceneBVH::DrawBVH(const glm::mat4& projection, const glm::mat4& view, int drawDepth) const
+{
+	glColor3f(1.f, 0.f, 0.f);
+	glLineWidth(1.f);
+	glBegin(GL_LINES);
+
+	TraverseDraw(m_nodes[0],projection,view,0,drawDepth);
+		
+	
+	glEnd();
 	
 }
 
@@ -273,4 +289,132 @@ RT::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<Model>>& mo
 		return leftShape;
 
 	}
+}
+
+bool RT::SceneBVH::TraverseWithEarlyOut(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
+	const RT::Ray& ray, const glm::vec3& lightPos) const
+{
+	// Exit if we miss the node
+	float temp{};
+	if (!currentNode.Intersect(ray, temp))
+	{
+		return false;
+	}
+	// Check if the current node is a leaf node
+	if (currentNode.count != 0)
+	{
+		const RT::Triangle* closestShape{ nullptr };
+		std::shared_ptr<Model> model;
+		// Find closest object
+		for (uint32_t i = 0; i < currentNode.count; ++i)
+		{
+			int index = i + currentNode.left;
+			glm::vec3 trd = glm::normalize(models[index]->transform.GetInverse() * glm::vec4{ ray.direction,0.f });
+			glm::vec3 tro = models[index]->transform.GetInverse() * glm::vec4{ ray.origin,1.f };
+			Ray transformedRay{ tro,trd };
+
+			bool hit = models[index]->modelData->bvh->LightTraverse(lightPos ,*models[index], transformedRay);
+			if (hit)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	// If current node is a branch node
+	else
+	{
+		float DistanceLeftBox{};
+		float DistanceRightBox{};
+		bool leftShape{ nullptr };
+		bool rightShape{ nullptr };
+		bool hitLeft = m_nodes[currentNode.left].Intersect(ray, DistanceLeftBox);
+		bool hitRight = m_nodes[currentNode.left + 1].Intersect(ray, DistanceRightBox);
+
+		if (hitLeft || hitRight)
+		{
+			leftShape = TraverseWithEarlyOut(models, m_nodes[currentNode.left], ray, lightPos);
+			rightShape = TraverseWithEarlyOut(models, m_nodes[currentNode.left + 1], ray, lightPos);
+		}
+		else if (hitLeft)
+		{
+			leftShape = TraverseWithEarlyOut(models, m_nodes[currentNode.left], ray,lightPos);
+		}
+		else if (hitRight)
+		{
+			rightShape = TraverseWithEarlyOut(models, m_nodes[currentNode.left + 1], ray, lightPos);
+		}
+		if(leftShape || rightShape)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	
+}
+
+void RT::SceneBVH::TraverseDraw(const BVHNode& currentNode, const glm::mat4& projection, const glm::mat4& view,int currentDepth, int drawDepth) const
+{
+	// skip all further nodes if they are never going to be drawn
+	if(currentDepth > drawDepth)
+		return;
+	// Draw node
+	if(currentDepth == drawDepth)
+	{
+		glm::vec3 corners[24];
+		corners[0] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z }; // lower X back z
+		corners[1] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z };
+
+		corners[2] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z }; // lower X front z
+		corners[3] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z };
+
+		corners[4] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z }; // lower X back z
+		corners[5] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z };
+
+		corners[6] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z }; // lower X front z
+		corners[7] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z };
+
+		corners[8] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z }; // left y back z
+		corners[9] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z };
+
+		corners[10] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z }; // left y front z
+		corners[11] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z };
+
+
+		corners[12] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z }; // left y back z
+		corners[13] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z };
+
+		corners[14] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z }; // left y front z
+		corners[15] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z };
+
+
+		corners[16] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z }; // left z left x
+		corners[17] = { currentNode.Bounds[0].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z };
+
+		corners[18] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z }; // left z left x
+		corners[19] = { currentNode.Bounds[0].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z };
+
+
+		corners[20] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[0].z }; // right z right x
+		corners[21] = { currentNode.Bounds[1].x,currentNode.Bounds[0].y,currentNode.Bounds[1].z };
+
+		corners[22] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[0].z }; // right z right x
+		corners[23] = { currentNode.Bounds[1].x,currentNode.Bounds[1].y,currentNode.Bounds[1].z };
+
+		for (int j = 0; j < 24; ++j)
+		{
+			glm::vec4 p = projection * view * glm::vec4{ corners[j],1.f };
+			p /= p.w;
+			glVertex3f(p.x, p.y, p.z);
+		}
+	}
+	// Termination if the node is a leaf
+	if(currentNode.count != 0)
+	{
+		return;
+	}
+
+	TraverseDraw(m_nodes[currentNode.left], projection, view, currentDepth + 1, drawDepth);
+	TraverseDraw(m_nodes[currentNode.left +1], projection, view, currentDepth + 1, drawDepth);
 }

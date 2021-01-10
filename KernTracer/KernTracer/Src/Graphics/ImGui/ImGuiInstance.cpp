@@ -51,7 +51,7 @@ void RT::ImGuiInstance::AddLayer(std::unique_ptr<RT::IImGuiLayer>&& layer)
 	m_layers.push_back(std::move(layer));
 }
 
-void RT::ImGuiInstance::Update(float deltaTime)
+void RT::ImGuiInstance::Update(float deltaTime, std::shared_ptr<Scene> currentScene)
 {
 
     // Start the Dear ImGui frame
@@ -61,7 +61,7 @@ void RT::ImGuiInstance::Update(float deltaTime)
 	
 	for (auto&& layer : m_layers)
 	{
-		layer->Update(deltaTime);
+		layer->Update(deltaTime,currentScene);
 	}
    
 }

@@ -18,7 +18,7 @@
 struct Header
 {
 	uint32_t ProgramName = 668672; // BVH
-	uint32_t Version = 0001;
+	uint32_t Version = 0002;
 
 	uint32_t NumberOfTriangles;
 	uint32_t SizeOfTriangle;
@@ -27,6 +27,8 @@ struct Header
 	uint32_t NumberOfNodes;
 	uint32_t SizeOfNode = 32;
 	uint32_t TotalSizeOfNodes;
+
+	uint32_t NumOfSplits;
 };
 
 struct Body
@@ -86,7 +88,7 @@ void RT::BVH::Serialize(RT::ModelData& model, const std::string& baseDir, const 
 	fileHeader.TotalSizeOFTriangles = fileHeader.NumberOfTriangles * fileHeader.SizeOfTriangle;
 	fileHeader.NumberOfNodes = m_numOfNodes;
 	fileHeader.TotalSizeOfNodes = fileHeader.SizeOfNode * fileHeader.NumberOfNodes;
-
+	fileHeader.NumOfSplits = NUM_OF_SPLITS;
 	fwrite(&fileHeader, sizeof(fileHeader) , 1, file);
 	// Save body data
 	fwrite(model.triangles.data(), sizeof(RT::Triangle), fileHeader.NumberOfTriangles, file);
@@ -109,7 +111,7 @@ bool RT::BVH::ReadBVHFile(RT::ModelData& model, const std::string& rootDir, cons
 	size_t result;
 	result = fread(&readHeader, sizeof(Header), 1, file);
 	assert(result != 0);
-	if(readHeader.Version < headerCheck.Version)
+	if(readHeader.Version < headerCheck.Version || readHeader.NumOfSplits != NUM_OF_SPLITS)
 	{
 		fclose(file);
 		return false;

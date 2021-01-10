@@ -1,7 +1,18 @@
 #include "pch.h"
 #include <Graphics/ImGui/Layers/StatLayer.h>
 #include <Graphics/ImGui/imgui.h>
-void RT::StatLayer::Update(float dt)
+#include <sstream>
+
+template<class T>
+std::string FormatWithCommas(T value)
+{
+	std::stringstream ss;
+	ss.imbue(std::locale(""));
+	ss << std::fixed << value;
+	return ss.str();
+}
+
+void RT::StatLayer::Update(float dt, std::shared_ptr<RT::Scene> currentScene)
 {
 	m_counter += dt;
 	++m_frames;
@@ -17,6 +28,16 @@ void RT::StatLayer::Update(float dt)
 	ImGui::Text(avrfps.c_str());
 	std::string avr{ "Average Time Per Frame: " + std::to_string(m_average) + "\n" };\
 	ImGui::Text(avr.c_str());
+
+	uint64_t triangles = 0;
+	for (int i = 0; i < currentScene->models.size(); ++i)
+	{
+		triangles += currentScene->models[i]->modelData->triangles.size();
+	}
+	std::string numOfTrianglesString{ "Number of Triangles: " };
+	numOfTrianglesString += FormatWithCommas(triangles);
+	numOfTrianglesString += "\n";
+	ImGui::Text(numOfTrianglesString.c_str());
 	ImGui::End();
 
 

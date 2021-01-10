@@ -20,6 +20,7 @@ namespace RT
 		void BuildBVH(std::vector<std::shared_ptr<Model>>& models);
 		ReturnInfo Intersect(std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray, float& t) const;
 		bool LightTraverse(const glm::vec3& lightpos, std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray) const;
+		void DrawBVH(const glm::mat4& projection, const glm::mat4& view, int drawDepth) const;
 	private:
 		struct PartionInfo
 		{
@@ -44,9 +45,14 @@ namespace RT
 		void Subdivide(RT::BVHNode& currentNode, SubDivideInfo info);
 		PartionInfo Partion(std::array<glm::vec3, 2>& Bounds, std::vector<std::shared_ptr<Model>>& models, uint32_t first, uint32_t count, float currentCost);
 		ReturnInfo TraverseBVH(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode, const RT::Ray& ray, float& boxDistance, float& objectDistance) const;
+		bool TraverseWithEarlyOut(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode, const RT::Ray& ray, const glm::vec3& lightPos) const;
+		void TraverseDraw(const BVHNode& currentNode, const glm::mat4& projection, const glm::mat4& view,int currentDepth, int drawDepth)const;
+
 		BVHNode* m_nodes = nullptr;
 		uint32_t m_numOfNodes{0};
 		uint32_t m_splits = 4;
+
+		
 	};
 
 }

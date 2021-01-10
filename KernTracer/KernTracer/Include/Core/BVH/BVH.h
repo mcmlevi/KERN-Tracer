@@ -7,7 +7,7 @@
 #include <Core/Model.h>
 #include <Core/BVH/BVHNode.h>
 
-#define NUM_OF_SPLITS 16
+#define NUM_OF_SPLITS 64
 
 namespace RT
 {

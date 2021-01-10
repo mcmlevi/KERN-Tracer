@@ -2,6 +2,8 @@
 #include <Core/Ray.h>
 #include <memory>
 #include <glm/vec3.hpp>
+#include <Core/RenderingOptions.h>
+
 namespace RT
 {
 	struct Scene;
@@ -15,7 +17,7 @@ namespace RT
 		RayTracer(std::shared_ptr<Scene> sceneToRender);
 		void ChangeSchene(std::shared_ptr<Scene> newSceneToRender);
 		glm::vec3 Trace(const Ray& ray, int currentDepth) const;
-		void SetOptions(int32_t options);
+		void SetOptions(RT::RenderingOptions::OptionsData options);
 	private:
 		struct HitInfo
 		{
@@ -34,9 +36,11 @@ namespace RT
 		float Calculatefresnel(const RT::Ray& ray, const glm::vec3& normal, float refractionIndex) const;
 		glm::vec3 calculateRefraction(const Ray& ray, const HitInfo& info, float& fresnel, int depth) const ;
 		glm::vec3 refract(const Ray& ray, const HitInfo& info) const;
+		glm::vec3 CalculatePixelCost() const;
 		int m_maxDepth{ 3 };
 		std::shared_ptr<Scene> m_activeScene{nullptr};
-		int32_t m_options{0};
+		RT::RenderingOptions::OptionsData m_options{0};
+		
 	};
 }
 
