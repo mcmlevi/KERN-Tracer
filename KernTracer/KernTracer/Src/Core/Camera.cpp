@@ -13,6 +13,13 @@ RT::Camera::Camera(const float fov, const glm::vec2& size, const glm::vec3& orig
 	
 }
 
+void RT::Camera::UpdateCamera(const glm::vec2& size)
+{
+	m_size = size;
+	m_aspectRatio = m_size.x / m_size.y;
+	m_proj = glm::perspective(-glm::radians(m_fov), m_aspectRatio, 0.1f, 1000.f);
+}
+
 RT::Ray RT::Camera::GetRayAt(const glm::vec2& screenPos) const
 {
 	// normalize screen coordinates and make sure the values are from the middle of the pixel

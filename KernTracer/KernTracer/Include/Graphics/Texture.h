@@ -7,7 +7,7 @@ namespace RT
 	{
 	public:
 		~Texture();
-		void LoadTexture(const std::string& filePath);
+		void LoadTexture(const std::string& filePath, bool flip = false);
 		const unsigned char* GetTexture() const;
 		glm::ivec2 GetSize() const;
 		int32_t GetChannels() const;

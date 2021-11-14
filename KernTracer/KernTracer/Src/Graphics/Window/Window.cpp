@@ -117,4 +117,5 @@ void RT::Window::SetNewSize(unsigned width, unsigned height)
     m_WindowSize.y = height;
     free(m_buffer);
     m_buffer = (glm::vec3*)malloc(sizeof(glm::vec3) * m_WindowSize.x * m_WindowSize.y);
+    glViewport(0, 0, width, height);
 }

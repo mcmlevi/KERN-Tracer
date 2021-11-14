@@ -8,7 +8,7 @@
 #include <Core/Scene.h>
 #include <Core/Material.h>
 #include <Core/RenderingOptions.h>
-
+#include <Core/EnvironmentMap.h>
 #include "Core/Timer.h"
 
 RT::RayTracer::RayTracer(std::shared_ptr<Scene> sceneToRender)
@@ -87,7 +87,7 @@ glm::vec3 RT::RayTracer::Trace(const Ray& ray, int currentDepth) const
 	}
 	if (currentDepth == 0 && m_options.Mode & RT::RenderingOptions::PIXELCOST)
 		return CalculatePixelCost();
-	return { 0.f,1.f,0.f };
+	return m_activeScene->environmentMap->Intersect(ray);
 }
 
 void RT::RayTracer::SetOptions(RenderingOptions::OptionsData options)

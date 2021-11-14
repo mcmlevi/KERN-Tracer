@@ -99,43 +99,4 @@ namespace JobSystem
         wakeCondition.notify_one(); // wake one thread
     }
 
-    //void Dispatch(uint32_t jobCount, uint32_t groupSize, const std::function<void(JobDispatchArgs)>& job)
-    //{
-    //    if (jobCount == 0 || groupSize == 0)
-    //    {
-    //        return;
-    //    }
-
-    //    // Calculate the amount of job groups to dispatch (overestimate, or "ceil"):
-    //    const uint32_t groupCount = (jobCount + groupSize - 1) / groupSize;
-
-    //    // The main thread label state is updated:
-    //    context.counter.fetch_add(1);
-
-    //    for (uint32_t groupIndex = 0; groupIndex < groupCount; ++groupIndex)
-    //    {
-    //        // For each group, generate one real job:
-    //        auto jobGroup = [jobCount, groupSize, job, groupIndex]() {
-
-    //            // Calculate the current group's offset into the jobs:
-    //            const uint32_t groupJobOffset = groupIndex * groupSize;
-    //            const uint32_t groupJobEnd = std::min(groupJobOffset + groupSize, jobCount);
-
-    //            JobDispatchArgs args;
-    //            args.groupIndex = groupIndex;
-
-    //            // Inside the group, loop through all job indices and execute job for each index:
-    //            for (uint32_t i = groupJobOffset; i < groupJobEnd; ++i)
-    //            {
-    //                args.jobIndex = i;
-    //                job(args);
-    //            }
-    //        };
-
-    //        // Try to push a new job until it is pushed successfully:
-    //        while (!jobPool.push_back(jobGroup)) { wakeCondition.notify_all(); }
-
-    //        wakeCondition.notify_one(); // wake one thread
-    //    }
-    //}
 }

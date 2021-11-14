@@ -2,6 +2,17 @@
 #include <memory>
 #include <atomic>
 #include <Graphics/ImGui/ImGuiInstance.h>
+
+#define WHITTED
+//#define PATH
+#ifdef WHITTED
+#include <Core/RayTracer.h>
+#define TRACER RayTracer
+#elif defined PATH
+#include <Core/PathTracer.h>
+#define TRACER PathTracer
+#endif
+
 namespace RT
 {
 	struct Scene;
@@ -23,7 +34,7 @@ namespace RT
 		std::shared_ptr<ResourceManager> m_resourceManager;
 		std::shared_ptr<RT::Camera> m_CurrentCamera;
 		std::shared_ptr<Window> m_window;
-		std::shared_ptr<RayTracer> m_tracer;
+		std::shared_ptr<TRACER> m_tracer;
 		std::unique_ptr<ImGuiInstance> m_imGuiInstance;
 		float m_deltaTime;
 		uint32_t m_chunkSize = 16;

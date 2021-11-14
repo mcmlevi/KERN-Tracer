@@ -18,9 +18,6 @@ namespace JobSystem
     // Add a job to execute asynchronously. Any idle thread will execute this job.
     void Execute(const std::function<void()>& job, std::atomic<int>* counter);
 
-    //// Divide a job onto multiple jobs and execute in parallel.
-    //void Dispatch(uint32_t jobCount, uint32_t groupSize, const std::function<void(JobDispatchArgs)>& job);
-
     // Check if any threads are working currently or not
     bool IsBusy(std::atomic<int>* counter);
 

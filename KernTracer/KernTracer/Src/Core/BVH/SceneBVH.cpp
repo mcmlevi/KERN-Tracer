@@ -63,10 +63,10 @@ void RT::SceneBVH::BuildBVH(std::vector<std::shared_ptr<Model>>& models)
 	float BoxSurface{ 2 * boxSize.z * boxSize.y + 2 * boxSize.z * boxSize.x + 2 * boxSize.x * boxSize.y };
 	SubDivideInfo info{ models,0,poolptr,BoxSurface };
 	Subdivide(m_nodes[0], info);
-	printf("%f \n", timer.GetElapsedTimeInMS());
+	//printf("%f \n", timer.GetElapsedTimeInMS());
 }
 
-RT::ReturnInfo RT::SceneBVH::Intersect(std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray, float& t) const
+RT::ReturnInfo RT::SceneBVH::Intersect(const std::vector<std::shared_ptr<Model>>& models, const RT::Ray& ray, float& t) const
 {
 	assert(m_numOfNodes != 0);
 	float boxDistance{ INFINITY };
@@ -75,7 +75,7 @@ RT::ReturnInfo RT::SceneBVH::Intersect(std::vector<std::shared_ptr<Model>>& mode
 	return triangle;
 }
 
-bool RT::SceneBVH::LightTraverse(const glm::vec3& lightpos, std::vector<std::shared_ptr<Model>>& models,
+bool RT::SceneBVH::LightTraverse(const glm::vec3& lightpos, const std::vector<std::shared_ptr<Model>>& models,
 	const RT::Ray& ray) const
 {
 	assert(m_numOfNodes != 0);
@@ -140,6 +140,13 @@ RT::SceneBVH::PartionInfo RT::SceneBVH::Partion(std::array<glm::vec3, 2>& Bounds
 				std::array<glm::vec3, 2> bBounds = TransformBounds(b->modelData->Bounds, b->transform.GetTransform());
 				return ((aBounds[0] + aBounds[1]) * 0.5f)[axis] < ((bBounds[0] + bBounds[1]) *0.5f)[axis];
 			});
+
+		for(const std::shared_ptr<Model>& model : models)
+		{
+			if (model.get() == nullptr)
+				__debugbreak();
+		}
+
 		for (uint32_t i = 1; i < m_splits; ++i)
 		{
 			// Sort the objects based on the provided split axis
@@ -210,7 +217,7 @@ RT::SceneBVH::PartionInfo RT::SceneBVH::Partion(std::array<glm::vec3, 2>& Bounds
 	return info;
 }
 
-RT::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
+RT::ReturnInfo RT::SceneBVH::TraverseBVH(const std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
                                                    const RT::Ray& ray, float& boxDistance, float& objectDistance) const
 {
 	// Exit if we miss the node
@@ -291,7 +298,7 @@ RT::ReturnInfo RT::SceneBVH::TraverseBVH(std::vector<std::shared_ptr<Model>>& mo
 	}
 }
 
-bool RT::SceneBVH::TraverseWithEarlyOut(std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
+bool RT::SceneBVH::TraverseWithEarlyOut(const std::vector<std::shared_ptr<Model>>& models, const BVHNode& currentNode,
 	const RT::Ray& ray, const glm::vec3& lightPos) const
 {
 	// Exit if we miss the node

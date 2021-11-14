@@ -138,6 +138,12 @@
     <ClCompile Include="Src\Core\BVH\SceneBVH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Core\PathTracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\EnvironmentMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Graphics\OpenGL\glad.h">
@@ -252,6 +258,12 @@
       <Filter>Header Files\Graphics\ImGui\Layers</Filter>
     </ClInclude>
     <ClInclude Include="Include\Core\BVH\SceneBVH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\PathTracer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Core\EnvironmentMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

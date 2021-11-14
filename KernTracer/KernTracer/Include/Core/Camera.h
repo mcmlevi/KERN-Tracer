@@ -11,6 +11,7 @@ namespace RT
 	{
 	public:
 		Camera(const float fov, const glm::vec2& size, const glm::vec3& origin, const glm::vec3& lookat);
+		void UpdateCamera(const glm::vec2& size);
 		Ray GetRayAt(const glm::vec2& screenPos) const;
 		const glm::mat4& GetProjection() const;
 		glm::mat4 GetView() const;

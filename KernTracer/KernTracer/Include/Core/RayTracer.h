@@ -37,7 +37,7 @@ namespace RT
 		glm::vec3 calculateRefraction(const Ray& ray, const HitInfo& info, float& fresnel, int depth) const ;
 		glm::vec3 refract(const Ray& ray, const HitInfo& info) const;
 		glm::vec3 CalculatePixelCost() const;
-		int m_maxDepth{ 3 };
+		int m_maxDepth{ 5 };
 		std::shared_ptr<Scene> m_activeScene{nullptr};
 		RT::RenderingOptions::OptionsData m_options{0};
 		
